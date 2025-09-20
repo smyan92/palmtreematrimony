@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, Button } from 'react-native';
 
-export default function HomeScreen() {
+export default function Search() {
  
 
   return (
     <View style={styles.container}>
       <Text>
-Homescreen
+Search
       </Text>
     </View>
   );

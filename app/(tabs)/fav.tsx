@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, Button } from 'react-native';
+import CustomHeader from '@/components/CustomHeader';
 
-export default function HomeScreen() {
+
+export default function Fav() {
  
 
   return (
     <View style={styles.container}>
       <Text>
-Homescreen
+fav
       </Text>
     </View>
   );
