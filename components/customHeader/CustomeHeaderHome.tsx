@@ -1,31 +1,39 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 
 interface CustomHeaderProps {
-  title: string;
-  onMenuPress?: () => void;
+  title: string;       // This will be the user name shown next to profile pic
   avatarUri?: string;
 }
 
 export default function CustomHeader({
   title,
-  onMenuPress,
   avatarUri,
 }: CustomHeaderProps) {
+  const navigation = useNavigation();
+
+  const openDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  };
+
   return (
     <View style={styles.header}>
-      <Pressable onPress={onMenuPress} style={styles.menuButton}>
+      {/* Left: Avatar + Name */}
+      <View style={styles.leftContainer}>
+        {avatarUri ? (
+          <Image source={{ uri: avatarUri }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarPlaceholder} />
+        )}
+        <Text style={styles.title}>{title}</Text>
+      </View>
+
+      {/* Right: Hamburger menu icon */}
+      <Pressable onPress={openDrawer} style={styles.menuButton}>
         <Ionicons name="menu" size={28} color="#fff" />
       </Pressable>
-
-      <Text style={styles.title}>{title}</Text>
-
-      {avatarUri ? (
-        <Image source={{ uri: avatarUri }} style={styles.avatar} />
-      ) : (
-        <View style={styles.avatarPlaceholder} />
-      )}
     </View>
   );
 }
@@ -40,13 +48,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 15,
   },
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   menuButton: {
     padding: 8,
   },
   title: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 10,  // space between avatar and name
   },
   avatar: {
     width: 36,
