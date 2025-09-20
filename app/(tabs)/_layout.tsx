@@ -26,7 +26,7 @@ export default function TabLayout() {
     options={{
       title: 'Home',
        header: () => <CustomHeader title="Home" showBackButton={false}  />,
-      headerShown: true,
+      headerShown: false,
       tabBarIcon: ({ color, size }) => (
         <Ionicons name="home" size={size ?? 24} color={color} />
       ),
