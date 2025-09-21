@@ -1,73 +1,139 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 
 interface CustomHeaderProps {
-  title: string;       // This will be the user name shown next to profile pic
-  avatarUri?: string;
+  title: string;       // Username
+  avatarUri?: string;  // Optional avatar URL
 }
 
-export default function CustomHeader({
-  title,
-  avatarUri,
-}: CustomHeaderProps) {
+export default function CustomHeader({ title, avatarUri }: CustomHeaderProps) {
   const navigation = useNavigation();
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
 
+  // This value can be passed as a prop to make the bar dynamic
+  const profileCompletion = 77; 
+  const progressWidth = `${profileCompletion}%`;
+
   return (
     <View style={styles.header}>
-      {/* Left: Avatar + Name */}
+      {/* Left: Avatar + Greeting + Name */}
       <View style={styles.leftContainer}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder} />
         )}
-        <Text style={styles.title}>{title}</Text>
+
+        <View style={styles.greetingContainer}>
+          <View style={styles.helloRow}>
+            <Text style={styles.helloText}>Hello</Text>
+            <FontAwesome5
+              name="hand-peace"
+              size={18}
+              color="#00BF41"
+              style={styles.handIcon}
+            />
+          </View>
+          <Text style={styles.title}>{title}</Text>
+
+          {/* Profile completion progress bar and text */}
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressBarFill, { width: progressWidth }]} />
+            </View>
+            <Text style={styles.progressText}>{profileCompletion}% Profile Completion</Text>
+          </View>
+
+        </View>
       </View>
 
-      {/* Right: Hamburger menu icon */}
+      {/* Right: Drawer toggle */}
       <Pressable onPress={openDrawer} style={styles.menuButton}>
-        <Ionicons name="menu" size={28} color="#fff" />
+        <Ionicons name="menu" size={28} color="black" />
       </Pressable>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
   header: {
-    height: 100,
+    height: 130,
     paddingHorizontal: 16,
-    backgroundColor: '#01A550',
+    paddingTop: 20,
+    backgroundColor: 'white',
+    color: 'black',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 15,
+    borderBottomWidth: 1,
+    borderColor: "#66666622",
   },
   leftContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 10,
+  },
+  avatarPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#ccc',
+    marginRight: 10,
+  },
+  greetingContainer: {
+    flexDirection: 'column',
+  },
+  helloRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  helloText: {
+      color: 'black',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  handIcon: {
+    marginLeft: 6,
+  },
+  title: {
+    color: 'black',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
   menuButton: {
     padding: 8,
   },
-  title: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,  // space between avatar and name
+  
+  // NEW STYLES
+  progressBarContainer: {
+    marginTop: 8,
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  progressBar: {
+    width: 140, // A fixed width for the entire bar
+    height: 8,
+    backgroundColor: '#FFD9E8', // Light pink color
+    borderRadius: 4,
   },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#FF4189', // Darker pink fill color
+    borderRadius: 4,
+  },
+  progressText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#666666',
+    fontWeight: '600',
   },
 });

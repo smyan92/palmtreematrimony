@@ -67,7 +67,7 @@ export default function SplashScreen() {
   }, []);
 
   const handleGo = () => {
-    router.replace('/(tabs)');
+    router.replace('/login');
   };
 
   return (
