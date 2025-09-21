@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, Button } from 'react-native';
-import CustomHeader from '@/components/CustomHeader';
-
 
 export default function Fav() {
  
@@ -20,6 +18,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'grey',
+      backgroundColor: 'white',
   },
 });

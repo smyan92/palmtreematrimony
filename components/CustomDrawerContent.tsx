@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import {
+  DrawerContentScrollView,
+  DrawerItemList,
+} from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomDrawerContent(props: any) {
@@ -11,9 +14,9 @@ export default function CustomDrawerContent(props: any) {
   };
 
   const logout = () => {
-    // Replace with your logout logic
     console.log('Logging out...');
     navigation.closeDrawer();
+    // Add real logout logic if needed
   };
 
   return (
@@ -21,7 +24,7 @@ export default function CustomDrawerContent(props: any) {
       {/* Top bar with Close button */}
       <View style={styles.topBar}>
         <Pressable onPress={closeDrawer} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color="#6200ee" />
+          <Ionicons name="close" size={28} color="#00BF41" />
         </Pressable>
       </View>
 
@@ -52,12 +55,14 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 16,
-    backgroundColor: '#d32f2f',
-    margin: 16,
+    margin: 70,
     borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#F18221',
+    backgroundColor: 'transparent',
   },
   logoutText: {
-    color: '#fff',
+    color: '#F18221',
     fontWeight: 'bold',
     fontSize: 16,
     textAlign: 'center',

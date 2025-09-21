@@ -1,18 +1,14 @@
-// app/(drawer)/(tabs)/_layout.js
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import CustomHeader from '@/components/customHeader/CustomHeader';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#FFB634',    // Active icon color (orange)
+        tabBarInactiveTintColor: '#9C9C9C',  // Inactive icon color (gray)
         tabBarButton: HapticTab,
       }}
     >

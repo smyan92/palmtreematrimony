@@ -40,9 +40,9 @@ export default function CustomHeader({
 
 const styles = StyleSheet.create({
   header: {
-    height: 60,
+    height: 100,
     paddingHorizontal: 16,
-    backgroundColor: '#6200ee',
+    backgroundColor: '#01A550',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

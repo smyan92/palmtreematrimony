@@ -1,6 +1,5 @@
-// app/(drawer)/_layout.tsx or _layout.js
 import { Drawer } from 'expo-router/drawer';
-import CustomDrawerContent from '../../components/CustomDrawerContent';  // adjust path
+import CustomDrawerContent from '../../components/CustomDrawerContent';
 
 export default function DrawerLayout() {
   return (
@@ -8,7 +7,11 @@ export default function DrawerLayout() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
-        drawerActiveTintColor: 'tomato',
+        drawerActiveTintColor: '#F18221',     // Active text color
+        drawerInactiveTintColor: '#7A7A7A',   // Inactive text color
+        drawerLabelStyle: {
+          fontWeight: '600',
+        },
       }}
     >
       <Drawer.Screen name="(tabs)" options={{ title: 'Home' }} />

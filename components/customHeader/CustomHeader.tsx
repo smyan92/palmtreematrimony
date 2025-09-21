@@ -20,8 +20,8 @@ export default function CustomHeader({ title, showBackButton = true }) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 60,
-    backgroundColor: '#6200ee',
+    height: 80,
+    backgroundColor: '#01A550',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
