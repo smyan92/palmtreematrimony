@@ -45,17 +45,17 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          header: () => <CustomHeader title="Profile" />,
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
+<Tabs.Screen
+  name="ProfileDetails"
+  options={{
+    href: null,         // Hidden from the bottom tab menu
+    headerShown: false, // Set to true if you want header
+    // tabBarStyle: { display: 'none' }, ❌ remove this
+  }}
+/>
+
+
+
     </Tabs>
   );
 }

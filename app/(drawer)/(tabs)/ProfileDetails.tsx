@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
 import CustomHeader from '@/components/customHeader/CustomHeader';
 
 const ProfileDetails = () => {
-  const router = useRouter();
-  const navigation = useNavigation();
-
-
-  // Sample profile data
   const profile = {
     image: 'https://example.com/photo.jpg',
     name: 'G. Srivalli',
@@ -51,10 +45,8 @@ const ProfileDetails = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* ✅ Custom Header with Back Button */}
-      <CustomHeader title="Profile Details" showBackButton={true} />
+      <CustomHeader title="Profile Details" showBackButton />
 
-      {/* ✅ Scrollable Profile Content */}
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <View style={styles.imageContainer}>
@@ -71,7 +63,6 @@ const ProfileDetails = () => {
 
           <View style={styles.separator} />
 
-          {/* Loop through profile.details */}
           {Object.entries(profile.details).map(([key, value]) => (
             <View style={styles.detailRow} key={key}>
               <Text style={styles.detailKey}>{key}</Text>
@@ -86,6 +77,12 @@ const ProfileDetails = () => {
       </ScrollView>
     </View>
   );
+};
+
+// 👇 Hide tab bar only for this screen
+export const options = {
+  headerShown: false,
+  tabBarStyle: { display: 'none' },
 };
 
 export default ProfileDetails;
