@@ -1,7 +1,8 @@
 // components/PartnerProfileCard.tsx
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; // Assuming Expo vector icons
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // 👈 Import useRouter
 
 // Interface for a single profile item
 export interface PartnerProfile {
@@ -11,26 +12,31 @@ export interface PartnerProfile {
   profession: string;
   avatarUri: string;
   location: string;
-  mesam: string; // Additional detail
+  mesam: string;
 }
 
 interface PartnerProfileCardProps {
   profile: PartnerProfile;
   onReject?: (profileId: string) => void;
   onLike?: (profileId: string) => void;
-  onPress?: (profile: PartnerProfile) => void; // Optional for full card press
 }
 
 const PartnerProfileCard: React.FC<PartnerProfileCardProps> = ({
   profile,
   onReject,
   onLike,
-  onPress,
 }) => {
+  const router = useRouter(); // 👈 Initialize router
+
+  const handleCardPress = () => {
+    // Navigate to ProfileDetails with params
+  router.replace('/ProfileDetails');
+  };
+
   return (
     <TouchableOpacity
       style={styles.cardContainer}
-      onPress={() => onPress && onPress(profile)}
+      onPress={handleCardPress}
       activeOpacity={0.8}
     >
       <Image source={{ uri: profile.avatarUri }} style={styles.avatar} />
@@ -64,6 +70,9 @@ const PartnerProfileCard: React.FC<PartnerProfileCardProps> = ({
     </TouchableOpacity>
   );
 };
+
+
+// ...styles (unchanged from your code)
 
 const styles = StyleSheet.create({
   cardContainer: {
