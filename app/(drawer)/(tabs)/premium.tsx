@@ -1,13 +1,14 @@
-import FavProfiles from '../../../components/FavProfiles'; 
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, Button } from 'react-native';
 
-export default function Fav() {
+export default function Premium() {
  
 
   return (
     <View style={styles.container}>
-    <FavProfiles/>
+      <Text>
+Premium
+      </Text>
     </View>
   );
 }
@@ -17,7 +18,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-      backgroundColor: 'white',
+    backgroundColor: 'white',
   },
 });

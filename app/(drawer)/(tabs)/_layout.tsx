@@ -7,8 +7,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#FFB634',    // Active icon color (orange)
-        tabBarInactiveTintColor: '#9C9C9C',  // Inactive icon color (gray)
+        tabBarActiveTintColor: '#FFB634',      // Active icon color (orange)
+        tabBarInactiveTintColor: '#9C9C9C',    // Inactive icon color (gray)
         tabBarButton: HapticTab,
       }}
     >
@@ -45,17 +45,24 @@ export default function TabLayout() {
           ),
         }}
       />
-<Tabs.Screen
-  name="ProfileDetails"
-  options={{
-    href: null,         // Hidden from the bottom tab menu
-    headerShown: false, // Set to true if you want header
-    // tabBarStyle: { display: 'none' }, ❌ remove this
-  }}
-/>
-
-
-
+   <Tabs.Screen
+        name="premium"
+        options={{
+          title: 'premium',
+          header: () => <CustomHeader title="premium" />,
+          headerShown: true,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="trophy" size={size ?? 24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ProfileDetails"
+        options={{
+          href: null,          // Hidden from the bottom tab menu
+          headerShown: false,  // Set to true if you want header
+        }}
+      />
     </Tabs>
   );
 }
