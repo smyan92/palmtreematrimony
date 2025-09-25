@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
@@ -7,56 +7,48 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout as logoutAction } from '../store/authSlice';
 import { router } from 'expo-router';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
-
 
 export default function CustomDrawerContent(props: any) {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const { navigation } = props; // ✅ use props.navigation
 
   const closeDrawer = () => {
-    navigation.dispatch(DrawerActions.closeDrawer());
+    navigation.closeDrawer(); // ✅ works because it's the drawer navigation
   };
 
-const logout = async () => {
-  try {
-    // Close the drawer first
-    closeDrawer();
+  const logout = async () => {
+    try {
+      closeDrawer();
 
-    // Clear Redux state
-    dispatch(logoutAction());
+      // Clear Redux
+      dispatch(logoutAction());
 
-    // Remove persisted user data
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
+      // Clear AsyncStorage
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('expiry');
 
-    // Show success message
-    Alert.alert('Success', 'You have been logged out.');
-
-    // Navigate to auth/login screen
-    router.replace('/(auth)/login');
-  } catch (error) {
-    console.error('Logout failed:', error);
-    Alert.alert('Error', 'Logout failed. Please try again.');
-  }
-};
-
+      Alert.alert('Success', 'You have been logged out.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
+      ]);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      Alert.alert('Error', 'Logout failed. Please try again.');
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Top bar with Close button */}
       <View style={styles.topBar}>
         <Pressable onPress={closeDrawer} style={styles.closeButton}>
           <Ionicons name="close" size={28} color="#00BF41" />
         </Pressable>
       </View>
 
-      {/* Drawer scroll content */}
       <DrawerContentScrollView {...props} contentContainerStyle={{ flexGrow: 1 }}>
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
 
-      {/* Logout button fixed at bottom */}
       <Pressable onPress={logout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Logout</Text>
       </Pressable>

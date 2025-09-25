@@ -18,8 +18,6 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
-  const closeDrawer = () => navigation.dispatch(DrawerActions.closeDrawer());
-const toggleDrawer = () => navigation.dispatch(DrawerActions.toggleDrawer());
 
   // Dynamic profile completion example
   const profileCompletion = 77;

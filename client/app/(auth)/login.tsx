@@ -67,6 +67,17 @@ export default function AuthScreen() {
         )
         await AsyncStorage.setItem('expiry', expiry.toString())
 
+
+const checkStorage = async () => {
+  const token = await AsyncStorage.getItem('token')
+  const user = await AsyncStorage.getItem('user')
+  console.log('AsyncStorage token:', token)
+  console.log('AsyncStorage user:', user)
+}
+
+checkStorage()  // Call after login or logout
+
+
         Alert.alert('Success', 'Login successful')
         router.replace('/(drawer)/(tabs)')
       } else {
