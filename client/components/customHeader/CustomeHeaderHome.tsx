@@ -2,21 +2,27 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store'; // ✅ adjust the path to your store.ts
 
 interface CustomHeaderProps {
-  title: string;       // Username
-  avatarUri?: string;  // Optional avatar URL
+  avatarUri?: string; // Optional avatar URL
 }
 
-export default function CustomHeader({ title, avatarUri }: CustomHeaderProps) {
+export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
   const navigation = useNavigation();
+
+  // ✅ Get fullName from Redux
+   const fullName = useSelector((state: RootState) => state.auth.user?.fullName); // ✅ inside
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
+  const closeDrawer = () => navigation.dispatch(DrawerActions.closeDrawer());
+const toggleDrawer = () => navigation.dispatch(DrawerActions.toggleDrawer());
 
-  // This value can be passed as a prop to make the bar dynamic
-  const profileCompletion = 77; 
+  // Dynamic profile completion example
+  const profileCompletion = 77;
   const progressWidth = `${profileCompletion}%`;
 
   return (
@@ -39,16 +45,21 @@ export default function CustomHeader({ title, avatarUri }: CustomHeaderProps) {
               style={styles.handIcon}
             />
           </View>
-          <Text style={styles.title}>{title}</Text>
+
+          {/* ✅ Dynamic fullName from Redux */}
+          <Text style={styles.title}>
+            {fullName ? fullName : 'Guest User'}
+          </Text>
 
           {/* Profile completion progress bar and text */}
           <View style={styles.progressBarContainer}>
             <View style={styles.progressBar}>
               <View style={[styles.progressBarFill, { width: progressWidth }]} />
             </View>
-            <Text style={styles.progressText}>{profileCompletion}% Profile Completion</Text>
+            <Text style={styles.progressText}>
+              {profileCompletion}% Profile Completion
+            </Text>
           </View>
-
         </View>
       </View>
 
@@ -60,19 +71,17 @@ export default function CustomHeader({ title, avatarUri }: CustomHeaderProps) {
   );
 }
 
-
 const styles = StyleSheet.create({
   header: {
     height: 130,
     paddingHorizontal: 16,
     paddingTop: 20,
     backgroundColor: 'white',
-    color: 'black',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderColor: "#66666622",
+    borderColor: '#66666622',
   },
   leftContainer: {
     flexDirection: 'row',
@@ -99,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   helloText: {
-      color: 'black',
+    color: 'black',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -113,21 +122,20 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     padding: 8,
+    color: 'black',
   },
-  
-  // NEW STYLES
   progressBarContainer: {
     marginTop: 8,
   },
   progressBar: {
-    width: 140, // A fixed width for the entire bar
+    width: 140,
     height: 8,
-    backgroundColor: '#FFD9E8', // Light pink color
+    backgroundColor: '#FFD9E8',
     borderRadius: 4,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#FF4189', // Darker pink fill color
+    backgroundColor: '#FF4189',
     borderRadius: 4,
   },
   progressText: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,79 +8,100 @@ import {
   StyleSheet,
   Dimensions,
   ImageBackground,
-} from 'react-native';
-import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from 'react-native'
+import { router } from 'expo-router'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useDispatch } from 'react-redux'
+import { setCredentials } from '../../store/authSlice'
 
-const API_URL = 'http://192.168.43.38:5000'; // ⚡ Correct base URL
+const API_URL = 'http://192.168.43.38:5000' // your backend
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window')
 
 export default function AuthScreen() {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
+  const [fullName, setFullName] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [password, setPassword] = useState('')
 
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const dispatch = useDispatch()
 
-  // -------------------- HANDLE LOGIN / SIGNUP --------------------
   const handleAuth = async () => {
     try {
       if (activeTab === 'login') {
         if (!phoneNumber || !password) {
-          Alert.alert('Error', 'Please enter phone and password');
-          return;
+          Alert.alert('Error', 'Please enter phone and password')
+          return
         }
 
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: phoneNumber, password }),
-        });
+        })
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Login failed');
+        const data = await response.json()
+        console.log('Login response:', data)
 
-        await AsyncStorage.setItem('token', data.token);
-        Alert.alert('Success', 'Login successful');
+        if (!data.token || !data.fullName) {
+          Alert.alert('Error', 'Invalid login credentials')
+          return
+        }
 
-        router.replace('/(drawer)/(tabs)'); // Navigate to main app
+        const expiry = Date.now() + 60 * 60 * 1000 // 1 hour
+
+        // Save to Redux
+        dispatch(
+          setCredentials({
+            token: data.token,
+            user: { username: data.username, fullName: data.fullName },
+            expiry,
+          })
+        )
+
+        // Save to AsyncStorage
+        await AsyncStorage.setItem('token', data.token)
+        await AsyncStorage.setItem(
+          'user',
+          JSON.stringify({ username: data.username, fullName: data.fullName })
+        )
+        await AsyncStorage.setItem('expiry', expiry.toString())
+
+        Alert.alert('Success', 'Login successful')
+        router.replace('/(drawer)/(tabs)')
       } else {
-        // SIGNUP
+        // Signup
         if (!fullName || !phoneNumber || !password) {
-          Alert.alert('Error', 'Please fill all fields');
-          return;
+          Alert.alert('Error', 'Please fill all fields')
+          return
         }
 
         const response = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: phoneNumber, password }),
-        });
+          body: JSON.stringify({ fullName, username: phoneNumber, password }),
+        })
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Signup failed');
+        const data = await response.json()
+        console.log('Signup response:', data)
 
-        Alert.alert('Success', 'Signup successful. Please login.');
-        setActiveTab('login');
+        if (!response.ok) throw new Error(data.message || 'Signup failed')
+
+        Alert.alert('Success', 'Signup successful. Please login.')
+        setActiveTab('login')
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      console.error('Auth error:', error)
+      Alert.alert('Error', error.message || 'Something went wrong')
     }
-  };
+  }
 
-  // -------------------- UI --------------------
   return (
     <ImageBackground
       source={require('../../assets/images/treebg.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeTextA}>WELCOME</Text>
-        <Text style={styles.welcomeTextB}>NADARS..!</Text>
-      </View>
-
       <View style={styles.box}>
         {/* Tabs */}
         <View style={styles.tabs}>
@@ -104,103 +125,57 @@ export default function AuthScreen() {
 
         {/* Signup Full Name */}
         {activeTab === 'signup' && (
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your name"
-              value={fullName}
-              onChangeText={setFullName}
-            />
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
         )}
 
-        {/* Phone Number */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="phone-pad"
-            placeholder="Enter phone number"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
-        </View>
+        {/* Phone */}
+        <TextInput
+          style={styles.input}
+          placeholder="Phone Number"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
 
         {/* Password */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry
-            placeholder="Enter password"
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-        {/* Submit Button */}
+        {/* Button */}
         <TouchableOpacity style={styles.button} onPress={handleAuth}>
           <Text style={styles.buttonText}>{activeTab === 'login' ? 'Login' : 'Signup'}</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
-  );
+  )
 }
 
-// -------------------- STYLES --------------------
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  welcomeContainer: {
-    position: 'absolute',
-    top: 80,
+  box: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  tabs: { flexDirection: 'row', marginBottom: 20 },
+  tabButton: { flex: 1, padding: 12, alignItems: 'center', backgroundColor: '#eee' },
+  activeTab: { backgroundColor: '#22c55e' },
+  tabText: { fontWeight: '600' },
+  activeTabText: { color: '#fff' },
+  input: {
     width: '100%',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  welcomeTextA: {
-    color: '#fff',
-    fontSize: width * 0.12,
-    fontWeight: '400',
-    letterSpacing: 2,
-  },
-  welcomeTextB: {
-    color: '#fff',
-    fontSize: width * 0.12,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  box: {
-    width: '90%',
-    aspectRatio: 1,
-    backgroundColor: 'white',
-    borderRadius: 9999,
-    padding: 24,
-    marginTop: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  tabs: {
-    flexDirection: 'row',
-    borderRadius: 50,
-    overflow: 'hidden',
+    padding: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    marginBottom: 20,
-    width: '100%',
+    borderRadius: 8,
   },
-  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center', backgroundColor: '#fff' },
-  activeTab: { backgroundColor: '#22c55e' },
-  tabText: { color: '#000', fontWeight: '600' },
-  activeTabText: { color: '#fff' },
-  inputGroup: { width: '100%', marginBottom: 15 },
-  label: { color: '#555', marginBottom: 6, fontWeight: '600' },
-  input: { width: '100%', borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 10, backgroundColor: '#fff' },
-  button: { marginTop: 10, backgroundColor: '#f97316', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 30, elevation: 4 },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16, textAlign: 'center' },
-});
+  button: { padding: 14, backgroundColor: '#f97316', borderRadius: 8, width: '100%' },
+  buttonText: { textAlign: 'center', color: '#fff', fontWeight: 'bold' },
+})

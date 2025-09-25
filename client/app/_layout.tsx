@@ -1,33 +1,35 @@
-// app/_layout.js
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Provider } from 'react-redux';
-import { store } from '../store/store'; // Adjust path if needed
-
-
-export const unstable_settings = {
-  initialRouteName: '(drawer)',
-};
+import React from 'react'
+import { Provider } from 'react-redux'
+import { Stack } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import 'react-native-reanimated'
+import { store } from '../store/store'
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import useAuthRehydrate from '@/hooks/useAuthRehydrate'
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
 
   return (
     <Provider store={store}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack initialRouteName="splash">
-          <Stack.Screen name="splash" options={{ headerShown: false }} />
-          <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="ProfileDetails" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
+        <StackScreenWrapper />
         <StatusBar style="auto" />
       </ThemeProvider>
     </Provider>
-  );
+  )
 }
 
+function StackScreenWrapper() {
+  useAuthRehydrate() // ✅ inside Provider
+
+  return (
+    <Stack initialRouteName="splash">
+      <Stack.Screen name="splash" options={{ headerShown: false }} />
+      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="ProfileDetails" options={{ headerShown: false }} />
+    </Stack>
+  )
+}

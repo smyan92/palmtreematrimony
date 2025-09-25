@@ -1,23 +1,46 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import {
-  DrawerContentScrollView,
-  DrawerItemList,
-} from '@react-navigation/drawer';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logout as logoutAction } from '../store/authSlice';
+import { router } from 'expo-router';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { Alert } from 'react-native';
+
 
 export default function CustomDrawerContent(props: any) {
-  const { navigation } = props;
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const closeDrawer = () => {
-    navigation.closeDrawer();
+    navigation.dispatch(DrawerActions.closeDrawer());
   };
 
-  const logout = () => {
-    console.log('Logging out...');
-    navigation.closeDrawer();
-    // Add real logout logic if needed
-  };
+const logout = async () => {
+  try {
+    // Close the drawer first
+    closeDrawer();
+
+    // Clear Redux state
+    dispatch(logoutAction());
+
+    // Remove persisted user data
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('user');
+
+    // Show success message
+    Alert.alert('Success', 'You have been logged out.');
+
+    // Navigate to auth/login screen
+    router.replace('/(auth)/login');
+  } catch (error) {
+    console.error('Logout failed:', error);
+    Alert.alert('Error', 'Logout failed. Please try again.');
+  }
+};
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -55,7 +78,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 16,
-    margin: 70,
+    margin: 20,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#F18221',
