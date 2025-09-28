@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -8,22 +8,68 @@ import {
   StyleSheet,
   Dimensions,
   ImageBackground,
+  ActivityIndicator,
 } from 'react-native'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDispatch } from 'react-redux'
 import { setCredentials } from '../../store/authSlice'
 
-const API_URL = 'http://192.168.43.38:5000' // your backend
+const API_URL = 'http://192.168.43.38:5000'
 const { width } = Dimensions.get('window')
 
 export default function AuthScreen() {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
   const [fullName, setFullName] = useState('')
-  const [mobileNo, setmobileNo] = useState('')
+  const [mobileNo, setMobileNo] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(true) // ✅ loading state
 
   const dispatch = useDispatch()
+
+  // ✅ Check token on mount
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token')
+        const userString = await AsyncStorage.getItem('user')
+        const expiryStr = await AsyncStorage.getItem('expiry')
+
+        if (token && userString && expiryStr) {
+          const expiry = parseInt(expiryStr, 10)
+          if (Date.now() < expiry) {
+            dispatch(
+              setCredentials({
+                token,
+                user: JSON.parse(userString),
+                expiry,
+              })
+            )
+            router.replace('/(drawer)/(tabs)')
+            return
+          } else {
+            // Expired → remove
+            await AsyncStorage.multiRemove(['token', 'user', 'expiry'])
+          }
+        }
+      } catch (error) {
+        console.error('Auto-login check failed', error)
+      } finally {
+        setLoading(false) // ✅ done checking
+      }
+    }
+
+    checkToken()
+  }, [dispatch])
+
+  if (loading) {
+    // ✅ Show spinner while checking token
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#f97316" />
+      </View>
+    )
+  }
 
   const handleAuth = async () => {
     try {
@@ -40,31 +86,24 @@ export default function AuthScreen() {
         })
 
         const data = await response.json()
-        console.log('Login response:', data)
-
-        if (!data.token || !data.fullName) {
-          Alert.alert('Error', 'Invalid login credentials')
+        if (!response.ok || !data?.token || !data?.user) {
+          Alert.alert('Error', data?.message || 'Invalid login credentials')
           return
         }
 
-        const expiry = Date.now() + 60 * 60 * 1000 // 1 hour
-
+        const expiry = Date.now() + 60 * 60 * 1000
         dispatch(
           setCredentials({
             token: data.token,
-            user: { mobileNo: data.mobileNo, fullName: data.fullName },
+            user: { mobileNo: data.user.mobileNo, fullName: data.user.fullName },
             expiry,
           })
         )
 
         await AsyncStorage.setItem('token', data.token)
-        await AsyncStorage.setItem(
-          'user',
-          JSON.stringify({ mobileNo: data.mobileNo, fullName: data.fullName })
-        )
+        await AsyncStorage.setItem('user', JSON.stringify(data.user))
         await AsyncStorage.setItem('expiry', expiry.toString())
 
-        Alert.alert('Success', 'Login successful')
         router.replace('/(drawer)/(tabs)')
       } else {
         if (!fullName || !mobileNo || !password) {
@@ -75,13 +114,14 @@ export default function AuthScreen() {
         const response = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, mobileNo: mobileNo, password }),
+          body: JSON.stringify({ fullName, mobileNo, password }),
         })
 
         const data = await response.json()
-        console.log('Signup response:', data)
-
-        if (!response.ok) throw new Error(data.message || 'Signup failed')
+        if (!response.ok) {
+          Alert.alert('Error', data?.message || 'Signup failed')
+          return
+        }
 
         Alert.alert('Success', 'Signup successful. Please login.')
         setActiveTab('login')
@@ -120,7 +160,6 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Signup Full Name */}
         {activeTab === 'signup' && (
           <TextInput
             style={styles.input}
@@ -130,16 +169,14 @@ export default function AuthScreen() {
           />
         )}
 
-        {/* Phone */}
         <TextInput
           style={styles.input}
           placeholder="Phone Number"
           value={mobileNo}
-          onChangeText={setmobileNo}
+          onChangeText={setMobileNo}
           keyboardType="phone-pad"
         />
 
-        {/* Password */}
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -148,7 +185,6 @@ export default function AuthScreen() {
           secureTextEntry
         />
 
-        {/* Forgot Password (Login Only) */}
         {activeTab === 'login' && (
           <TouchableOpacity
             style={styles.forgotContainer}
@@ -158,7 +194,6 @@ export default function AuthScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Button */}
         <TouchableOpacity style={styles.button} onPress={handleAuth}>
           <Text style={styles.buttonText}>{activeTab === 'login' ? 'Login' : 'Signup'}</Text>
         </TouchableOpacity>
@@ -170,7 +205,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   box: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  tabs: { flexDirection: 'row', marginBottom: 20 },
+  tabs: { flexDirection: 'row', marginBottom: 20, width: '100%' },
   tabButton: { flex: 1, padding: 12, alignItems: 'center', backgroundColor: '#eee' },
   activeTab: { backgroundColor: '#22c55e' },
   tabText: { fontWeight: '600' },
@@ -182,16 +217,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
+    backgroundColor: '#fff',
   },
-  forgotContainer: {
-    alignSelf: 'flex-end',
-    marginBottom: 12,
-  },
-  forgotText: {
-    color: '#2563eb',
-    textDecorationLine: 'underline',
-    fontWeight: '600',
-  },
+  forgotContainer: { alignSelf: 'flex-end', marginBottom: 12 },
+  forgotText: { color: '#2563eb', textDecorationLine: 'underline', fontWeight: '600' },
   button: { padding: 14, backgroundColor: '#f97316', borderRadius: 8, width: '100%' },
   buttonText: { textAlign: 'center', color: '#fff', fontWeight: 'bold' },
 })
