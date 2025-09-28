@@ -10,9 +10,17 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../store/authSlice'; // adjust path
+
+
+
 const API_URL = 'http://192.168.43.38:5000'; // your backend IP
 
 export default function ForgotPassword() {
+const dispatch = useDispatch();
   const [step, setStep] = useState(1); // 1: Request OTP, 2: Reset Password
   const [mobileNo, setMobileNo] = useState('');
   const [otp, setOtp] = useState('');
@@ -32,7 +40,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/forgot/request-otp`, {
+      const response = await fetch(`${API_URL}/auth/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobileNo }),
@@ -63,44 +71,51 @@ export default function ForgotPassword() {
   // -----------------------------
   // Reset Password
   // -----------------------------
-  const handleResetPassword = async () => {
-    if (!otp || newPassword.length < 6 || newPassword !== confirmPassword) {
-      Alert.alert(
-        'Warning',
-        'Please ensure you enter the OTP and both passwords match (min 6 chars).'
-      );
-      return;
-    }
+const handleResetPassword = async () => {
+  if (!otp || newPassword.length < 6 || newPassword !== confirmPassword) {
+    Alert.alert(
+      'Warning',
+      'Please ensure you enter the OTP and both passwords match (min 6 chars).'
+    );
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
+  try {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobileNo, otp, newPassword }),
+    });
+
+    let data;
     try {
-      const response = await fetch(`${API_URL}/auth/forgot/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileNo, otp, newPassword }),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        const text = await response.text();
-        console.error('Response not JSON:', text);
-        throw new Error('Invalid server response');
-      }
-
-      if (!response.ok) throw new Error(data.message || 'Password reset failed.');
-
-      Alert.alert('Success', data.message || 'Password reset successful!');
-      router.replace('/'); // back to login
-    } catch (error: any) {
-      console.error('Reset error:', error);
-      Alert.alert('Error', error.message || 'Failed to reset password.');
-    } finally {
-      setLoading(false);
+      data = await response.json();
+    } catch {
+      const text = await response.text();
+      console.error('Response not JSON:', text);
+      throw new Error('Invalid server response');
     }
-  };
+
+    if (!response.ok) throw new Error(data.message || 'Password reset failed.');
+
+    // ✅ Clear AsyncStorage
+    await AsyncStorage.multiRemove(['token', 'user', 'expiry']);
+
+    // ✅ Dispatch logout in Redux
+    dispatch(logout());
+
+    Alert.alert('Success', data.message || 'Password reset successful!');
+    router.replace('/(auth)/login'); // go back to login
+  } catch (error: any) {
+    console.error('Reset error:', error);
+    Alert.alert('Error', error.message || 'Failed to reset password.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // -----------------------------
   // Step Components

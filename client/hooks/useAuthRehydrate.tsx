@@ -28,9 +28,9 @@ export default function useAuthRehydrate() {
             })
           )
         } else {
-          // ❌ Expired → clear
+          // ❌ Expired → clear storage & logout
           await AsyncStorage.multiRemove(['token', 'user', 'expiry'])
-          dispatch(clearCredentials())
+          dispatch(logout()) // ✅ use logout
         }
       } catch (error) {
         console.error('Failed to rehydrate user', error)
