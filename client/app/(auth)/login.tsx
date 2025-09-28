@@ -15,13 +15,12 @@ import { useDispatch } from 'react-redux'
 import { setCredentials } from '../../store/authSlice'
 
 const API_URL = 'http://192.168.43.38:5000' // your backend
-
 const { width } = Dimensions.get('window')
 
 export default function AuthScreen() {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
   const [fullName, setFullName] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const [mobileNo, setmobileNo] = useState('')
   const [password, setPassword] = useState('')
 
   const dispatch = useDispatch()
@@ -29,7 +28,7 @@ export default function AuthScreen() {
   const handleAuth = async () => {
     try {
       if (activeTab === 'login') {
-        if (!phoneNumber || !password) {
+        if (!mobileNo || !password) {
           Alert.alert('Error', 'Please enter phone and password')
           return
         }
@@ -37,7 +36,7 @@ export default function AuthScreen() {
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: phoneNumber, password }),
+          body: JSON.stringify({ mobileNo, password }),
         })
 
         const data = await response.json()
@@ -50,39 +49,25 @@ export default function AuthScreen() {
 
         const expiry = Date.now() + 60 * 60 * 1000 // 1 hour
 
-        // Save to Redux
         dispatch(
           setCredentials({
             token: data.token,
-            user: { username: data.username, fullName: data.fullName },
+            user: { mobileNo: data.mobileNo, fullName: data.fullName },
             expiry,
           })
         )
 
-        // Save to AsyncStorage
         await AsyncStorage.setItem('token', data.token)
         await AsyncStorage.setItem(
           'user',
-          JSON.stringify({ username: data.username, fullName: data.fullName })
+          JSON.stringify({ mobileNo: data.mobileNo, fullName: data.fullName })
         )
         await AsyncStorage.setItem('expiry', expiry.toString())
-
-
-const checkStorage = async () => {
-  const token = await AsyncStorage.getItem('token')
-  const user = await AsyncStorage.getItem('user')
-  console.log('AsyncStorage token:', token)
-  console.log('AsyncStorage user:', user)
-}
-
-checkStorage()  // Call after login or logout
-
 
         Alert.alert('Success', 'Login successful')
         router.replace('/(drawer)/(tabs)')
       } else {
-        // Signup
-        if (!fullName || !phoneNumber || !password) {
+        if (!fullName || !mobileNo || !password) {
           Alert.alert('Error', 'Please fill all fields')
           return
         }
@@ -90,7 +75,7 @@ checkStorage()  // Call after login or logout
         const response = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, username: phoneNumber, password }),
+          body: JSON.stringify({ fullName, mobileNo: mobileNo, password }),
         })
 
         const data = await response.json()
@@ -124,6 +109,7 @@ checkStorage()  // Call after login or logout
               Login
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.tabButton, activeTab === 'signup' && styles.activeTab]}
             onPress={() => setActiveTab('signup')}
@@ -148,8 +134,8 @@ checkStorage()  // Call after login or logout
         <TextInput
           style={styles.input}
           placeholder="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          value={mobileNo}
+          onChangeText={setmobileNo}
           keyboardType="phone-pad"
         />
 
@@ -161,6 +147,16 @@ checkStorage()  // Call after login or logout
           onChangeText={setPassword}
           secureTextEntry
         />
+
+        {/* Forgot Password (Login Only) */}
+        {activeTab === 'login' && (
+          <TouchableOpacity
+            style={styles.forgotContainer}
+            onPress={() => router.push('/(auth)/ForgotPassword')}
+          >
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Button */}
         <TouchableOpacity style={styles.button} onPress={handleAuth}>
@@ -186,6 +182,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
+  },
+  forgotContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: 12,
+  },
+  forgotText: {
+    color: '#2563eb',
+    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
   button: { padding: 14, backgroundColor: '#f97316', borderRadius: 8, width: '100%' },
   buttonText: { textAlign: 'center', color: '#fff', fontWeight: 'bold' },
