@@ -110,11 +110,11 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
 
   // Define the steps for the modal
   const profileSteps: ProfileStep[] = [
-    { id: 1, label: 'Add your address', isCompleted: true, onPress: () => console.log('Nav to Add Address 1') },
-    { id: 2, label: 'Confirm your email', isCompleted: true, onPress: () => console.log('Nav to Confirm Email') },
-    { id: 3, label: 'Upload your resume', isCompleted: true, onPress: () => console.log('Nav to Upload Resume') },
-    { id: 4, label: 'Add a profile photo', isCompleted: false, onPress: () => console.log('Nav to Add Photo') },
-    { id: 5, label: 'Add your work experience', isCompleted: false, onPress: () => console.log('Nav to Add Experience') },
+    { id: 1, label: 'Basic Details', isCompleted: true, onPress: () => console.log('Nav to Add Address 1') },
+    { id: 2, label: 'Professional Details', isCompleted: true, onPress: () => console.log('Nav to Confirm Email') },
+    { id: 3, label: 'Family Details', isCompleted: true, onPress: () => console.log('Nav to Upload Resume') },
+    { id: 4, label: 'Contct Details', isCompleted: false, onPress: () => console.log('Nav to Add Photo') },
+    { id: 5, label: 'Partner Preferences', isCompleted: false, onPress: () => console.log('Nav to Add Experience') },
   ];
 
 
