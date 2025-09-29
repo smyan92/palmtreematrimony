@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, TouchableOpacity } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
@@ -24,6 +24,8 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
   const progressWidth = `${profileCompletion}%`;
 
   return (
+    <View>
+
     <View style={styles.header}>
       {/* Left: Avatar + Greeting + Name */}
       <View style={styles.leftContainer}>
@@ -66,6 +68,22 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
         <Ionicons name="menu" size={28} color="black" />
       </Pressable>
     </View>
+
+
+<View style={styles.buttonWrapper}>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => console.log('Create pressed')}
+        >
+          <Text style={styles.createButtonText}>Complete your Profile</Text>
+        </TouchableOpacity>
+      </View>
+
+
+
+
+    </View>
+
   );
 }
 
@@ -140,6 +158,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     color: '#666666',
+    fontWeight: '600',
+  },
+      buttonWrapper: {
+  paddingHorizontal: 16,
+  paddingTop: 16,
+  marginBottom: 16, // small gap below
+},
+
+  createButton: {
+    width: '100%',
+    backgroundColor: '#FFE3CB',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createButtonText: {
+    color: '#F18221',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
