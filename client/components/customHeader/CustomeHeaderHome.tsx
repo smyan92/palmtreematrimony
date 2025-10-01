@@ -15,16 +15,18 @@ import {
   ViewStyle 
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { useRouter } from "expo-router";
 
-// Enable LayoutAnimation on Android
+
+// 👇 enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// --- Modal Step Interfaces ---
+// --- Interface for Modal Step Data ---
 interface ProfileStep {
   id: number;
   label: string;
@@ -38,7 +40,7 @@ interface ProfileCompletionModalProps {
   completionPercentage: number;
 }
 
-// --- Profile Completion Modal ---
+// --- Profile Completion Modal Component ---
 const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({ isVisible, onClose, steps, completionPercentage }) => {
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
 
@@ -56,13 +58,16 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({ isVisib
       visible={isVisible}
       onRequestClose={onClose}
     >
+      {/* Overlay */}
       <Pressable style={modalStyles.centeredView} onPress={onClose}>
         <Pressable style={modalStyles.modalView} onPress={(e) => e.stopPropagation()}>
+          {/* Header */}
           <View style={modalStyles.header}>
             <Text style={modalStyles.title}>Complete your profile</Text>
             <Text style={modalStyles.subtitle}>
               By completing all the details you have a higher chance of being seen by recruiters.
             </Text>
+
             <View style={modalStyles.progressBarContainer}>
               <Text style={modalStyles.percentageText}>{completionPercentage}%</Text>
               <View style={modalStyles.progressBar}>
@@ -71,52 +76,98 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({ isVisib
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={modalStyles.stepsContainer}>
-            {steps.map((step) => (
-              <View key={step.id}>
-                <TouchableOpacity style={modalStyles.stepItem} onPress={() => toggleStep(step.id)}>
-                  <View style={modalStyles.stepIconContainer}>
-                    {step.isCompleted ? (
-                      <Ionicons name="checkmark-circle" size={24} color="#00BF41" />
-                    ) : (
-                      <MaterialCommunityIcons name="circle-outline" size={24} color="#666666" />
-                    )}
-                  </View>
-                  <Text style={modalStyles.stepText}>{step.label}</Text>
-                  <Ionicons 
-                    name={expandedStep === step.id ? "chevron-up" : "chevron-down"} 
-                    size={24} 
-                    color="#999" 
-                  />
-                </TouchableOpacity>
+          {/* Steps */}
+     {/* Steps */}
+<ScrollView contentContainerStyle={modalStyles.stepsContainer}>
+  {steps.map((step) => (
+    <View key={step.id}>
+      {/* Step Header */}
+      <TouchableOpacity 
+        style={modalStyles.stepItem} 
+        onPress={() => toggleStep(step.id)}
+      >
+        <View style={modalStyles.stepIconContainer}>
+          {step.isCompleted ? (
+            <Ionicons name="checkmark-circle" size={24} color="#00BF41" />
+          ) : (
+            <MaterialCommunityIcons name="circle-outline" size={24} color="#666666" />
+          )}
+        </View>
+        <Text style={modalStyles.stepText}>{step.label}</Text>
+        <Ionicons 
+          name={expandedStep === step.id ? "chevron-up" : "chevron-down"} 
+          size={24} 
+          color="#999" 
+        />
+      </TouchableOpacity>
 
-                {expandedStep === step.id && (
-                  <View style={modalStyles.formContainer}>
-                    <TextInput placeholder="Sample Input" style={modalStyles.input} />
-                  </View>
-                )}
-              </View>
-            ))}
+      {/* Expanded Content */}
+      {expandedStep === step.id && (
+        <View style={modalStyles.formContainer}>
+          {step.id === 1 && (
+            <>
+              <TextInput placeholder="Name" style={modalStyles.input} />
+              <TextInput placeholder="Age" style={modalStyles.input} keyboardType="numeric" />
+              <TextInput placeholder="Gender" style={modalStyles.input} />
+            </>
+          )}
+          {step.id === 2 && (
+            <>
+              <TextInput placeholder="Job Title" style={modalStyles.input} />
+              <TextInput placeholder="Company" style={modalStyles.input} />
+            </>
+          )}
+          {step.id === 3 && (
+            <>
+              <TextInput placeholder="Father’s Name" style={modalStyles.input} />
+              <TextInput placeholder="Mother’s Occupation" style={modalStyles.input} />
+            </>
+          )}
+          {step.id === 4 && (
+            <>
+              <TextInput placeholder="Phone Number" style={modalStyles.input} keyboardType="phone-pad" />
+              <TextInput placeholder="Email Address" style={modalStyles.input} keyboardType="email-address" />
+            </>
+          )}
+          {step.id === 5 && (
+            <>
+              <TextInput placeholder="Preferred Partner Age" style={modalStyles.input} keyboardType="numeric" />
+              <TextInput placeholder="Preferred City" style={modalStyles.input} />
+            </>
+          )}
+        </View>
+      )}
+    </View>
+  ))}
 
-            <TouchableOpacity style={modalStyles.saveButton} onPress={() => console.log("Save clicked")}>
-              <Text style={modalStyles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          </ScrollView>
+  {/* --- Save Button --- */}
+  <TouchableOpacity 
+    style={modalStyles.saveButton} 
+    onPress={() => console.log("Save clicked")}
+  >
+    <Text style={modalStyles.saveButtonText}>Save</Text>
+  </TouchableOpacity>
+</ScrollView>
+
         </Pressable>
       </Pressable>
     </Modal>
   );
 };
 
-// --- CustomHeader ---
+// --- Custom Header Component ---
 interface CustomHeaderProps {
-  avatarUri?: string;
+  avatarUri?: string; 
 }
 
 export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const fullName = useSelector((state: RootState) => state.auth.user?.fullName); 
+
+  const openDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  };
 
   const profileCompletion = 72; 
   const progressWidth = `${profileCompletion}%`;
@@ -128,9 +179,11 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
     { id: 4, label: 'Contact Details', isCompleted: false },
     { id: 5, label: 'Partner Preferences', isCompleted: false },
   ];
+  const router = useRouter(); // 👈 useRouter instead of useNavigation
 
   return (
     <View>
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.leftContainer}>
           {avatarUri ? (
@@ -142,32 +195,44 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
           <View style={styles.greetingContainer}>
             <View style={styles.helloRow}>
               <Text style={styles.helloText}>Hello</Text>
-              <FontAwesome5 name="hand-peace" size={18} color="#00BF41" style={styles.handIcon} />
+              <FontAwesome5
+                name="hand-peace"
+                size={18}
+                color="#00BF41"
+                style={styles.handIcon}
+              />
             </View>
-            <Text style={styles.title}>{fullName || 'Guest User'}</Text>
+
+            <Text style={styles.title}>
+              {fullName ? fullName : 'Guest User'}
+            </Text>
 
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBar}>
                 <View style={[styles.progressBarFill, { width: progressWidth } as ViewStyle]} />
               </View>
-              <Text style={styles.progressText}>{profileCompletion}% Profile Completion</Text>
+              <Text style={styles.progressText}>
+                {profileCompletion}% Profile Completion
+              </Text>
             </View>
           </View>
         </View>
 
-        <Pressable onPress={() => setIsModalVisible(true)} style={styles.menuButton}>
+        <Pressable onPress={openDrawer} style={styles.menuButton}>
           <Ionicons name="menu" size={28} color="black" />
         </Pressable>
       </View>
 
       {/* Complete Profile Button */}
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={() => router.push("/(drawer)/(tabs)/ProfileForm")} 
-        >
-          <Text style={styles.createButtonText}>Complete your Profile</Text>
-        </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.createButton}
+      onPress={() => router.navigate("/(drawer)/(tabs)/ProfileForm")}
+    >
+      <Text style={styles.createButtonText}>Complete your Profile</Text>
+    </TouchableOpacity>
+
+
       </View>
 
       {/* Profile Completion Modal */}
@@ -183,7 +248,17 @@ export default function CustomHeader({ avatarUri }: CustomHeaderProps) {
 
 // --- Styles ---
 const styles = StyleSheet.create({
-  header: { height: 130, paddingHorizontal: 16, paddingTop: 20, backgroundColor: 'white', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: '#66666622' },
+  header: {
+    height: 130,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderColor: '#66666622',
+  },
   leftContainer: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 60, height: 60, borderRadius: 30, marginRight: 10 },
   avatarPlaceholder: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#ccc', marginRight: 10 },
@@ -217,7 +292,18 @@ const modalStyles = StyleSheet.create({
   stepIconContainer: { width: 30, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   stepText: { flex: 1, fontSize: 16, color: '#333', fontWeight: '500' },
   formContainer: { padding: 10, backgroundColor: '#FAFAFA', borderRadius: 8 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 8, marginBottom: 10, fontSize: 14 },
-  saveButton: { marginTop: 20, backgroundColor: '#F18221', paddingVertical: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  saveButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 8, marginBottom: 10, fontSize: 14 },saveButton: {
+  marginTop: 20,
+  backgroundColor: '#F18221', // same orange as before
+  paddingVertical: 14,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+saveButtonText: {
+  color: 'white',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
 });

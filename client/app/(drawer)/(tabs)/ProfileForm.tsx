@@ -1,187 +1,993 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
   StyleSheet,
   Platform,
   LayoutAnimation,
   UIManager,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Formik } from "formik";
+import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import DropDownPicker from "react-native-dropdown-picker";
+import DropDownPicker, { ItemType } from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import CustomHeader from "@/components/customHeader/CustomHeader"
 
-// Enable LayoutAnimation on Android
+// Enable LayoutAnimation for Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-interface Step {
-  id: number;
-  label: string;
+// ===================================================================
+// 1. DATA AND CONSTANTS (Madurai-focused Tamil Matrimony Data)
+// ===================================================================
+
+const TAMIL_DROPDOWN_DATA = {
+  // --- Profile Details ---
+  RELIGION: [
+    { label: "Hindu", value: "Hindu" },
+    { label: "Christian", value: "Christian" },
+    { label: "Muslim", value: "Muslim" },
+    { label: "Jain", value: "Jain" },
+    { label: "Other", value: "Other" },
+  ],
+  // Common Tamil Subcastes
+  SUBCASTE: [
+    { label: "Iyer", value: "Iyer" },
+    { label: "Iyengar", value: "Iyengar" },
+    { label: "Nadar", value: "Nadar" },
+    { label: "Mudaliar", value: "Mudaliar" },
+    { label: "Gounder", value: "Gounder" },
+    { label: "Thevar", value: "Thevar" },
+    { label: "Chettiar", value: "Chettiar" },
+    { label: "Vanniyar", value: "Vanniyar" },
+    { label: "Pillai", value: "Pillai" },
+    { label: "Naidu", value: "Naidu" },
+    { label: "Adi Dravida", value: "Adi Dravida" },
+    { label: "Other", value: "Other" },
+  ],
+  // Major Rasi options
+  RASI: [
+    { label: "Mesham (Aries)", value: "Mesham" },
+    { label: "Rishabam (Taurus)", value: "Rishabam" },
+    { label: "Mithunam (Gemini)", value: "Mithunam" },
+    { label: "Katakam (Cancer)", value: "Katakam" },
+    { label: "Simmam (Leo)", value: "Simmam" },
+    { label: "Kanni (Virgo)", value: "Kanni" },
+    { label: "Thulam (Libra)", value: "Thulam" },
+    { label: "Viruchigam (Scorpio)", value: "Viruchigam" },
+    { label: "Dhanusu (Sagittarius)", value: "Dhanusu" },
+    { label: "Makaram (Capricorn)", value: "Makaram" },
+    { label: "Kumbam (Aquarius)", value: "Kumbam" },
+    { label: "Meenam (Pisces)", value: "Meenam" },
+  ],
+  // Major Nakshatra/Star options
+  STAR: [
+    { label: "Ashwini", value: "Ashwini" },
+    { label: "Bharani", value: "Bharani" },
+    { label: "Karthigai", value: "Karthigai" },
+    { label: "Rohini", value: "Rohini" },
+    { label: "Mirugasirisham", value: "Mirugasirisham" },
+    { label: "Thiruvathirai", value: "Thiruvathirai" },
+    { label: "Punarpoosam", value: "Punarpoosam" },
+    { label: "Poosam", value: "Poosam" },
+    { label: "Ayilyam", value: "Ayilyam" },
+    { label: "Magam", value: "Magam" },
+    { label: "Pooram", value: "Pooram" },
+    { label: "Uthiram", value: "Uthiram" },
+    { label: "Hastham", value: "Hastham" },
+    { label: "Chithirai", value: "Chithirai" },
+    { label: "Swathi", value: "Swathi" },
+    { label: "Visakam", value: "Visakam" },
+    { label: "Anusham", value: "Anusham" },
+    { label: "Kettai", value: "Kettai" },
+    { label: "Moolam", value: "Moolam" },
+    { label: "Pooradam", value: "Pooradam" },
+    { label: "Uthiradam", value: "Uthiradam" },
+    { label: "Thiruvonam", value: "Thiruvonam" },
+    { label: "Avittam", value: "Avittam" },
+    { label: "Sathayam", value: "Sathayam" },
+    { label: "Poorattathi", value: "Poorattathi" },
+    { label: "Uthirattathi", value: "Uthirattathi" },
+    { label: "Revathi", value: "Revathi" },
+  ],
+  COMPLEXION: [
+    { label: "Very Fair", value: "Very Fair" },
+    { label: "Fair", value: "Fair" },
+    { label: "Wheatish", value: "Wheatish" },
+    { label: "Dark", value: "Dark" },
+  ],
+  HEIGHT: [
+    { label: "5' 0\" - 152 cm", value: "5' 0\"" },
+    { label: "5' 3\" - 160 cm", value: "5' 3\"" },
+    { label: "5' 6\" - 168 cm", value: "5' 6\"" },
+    { label: "5' 9\" - 175 cm", value: "5' 9\"" },
+    { label: "6' 0\" - 183 cm", value: "6' 0\"" },
+    { label: "6' 3\" - 191 cm", value: "6' 3\"" },
+    { label: "6' 6\" - 198 cm", value: "6' 6\"" },
+  ],
+  FOOD: [
+    { label: "Vegetarian", value: "Veg" },
+    { label: "Non-Vegetarian", value: "Non-Veg" },
+    { label: "Eggetarian", value: "Egg" },
+  ],
+  MOTHER_TONGUE: [
+    { label: "Tamil", value: "Tamil" },
+    { label: "Telugu", value: "Telugu" },
+    { label: "Malayalam", value: "Malayalam" },
+    { label: "Kannada", value: "Kannada" },
+  ],
+  CHEVVAI_DHOSAM: [
+    { label: "Yes", value: "Yes" },
+    { label: "No", value: "No" },
+    { label: "Slight", value: "Slight" },
+    { label: "Don't Know", value: "Don't Know" },
+  ],
+  PHYSICAL_CHALLENGE: [
+    { label: "None", value: "None" },
+    { label: "Physically Challenged", value: "Yes" },
+  ],
+  // --- Professional & Education ---
+  EDUCATION: [
+    { label: "B.E. / B.Tech", value: "BE/BTech" },
+    { label: "M.E. / M.Tech / MCA", value: "ME/MTech/MCA" },
+    { label: "B.A. / B.Sc. / B.Com", value: "BA/BSc/BCom" },
+    { label: "M.A. / M.Sc. / M.Com", value: "MA/MSc/MCom" },
+    { label: "MBBS / BDS / BAMS", value: "Medical" },
+    { label: "CA / CS / ICWA", value: "Finance" },
+    { label: "Diploma / ITI", value: "Diploma/ITI" },
+    { label: "Other Graduate", value: "OtherGrad" },
+  ],
+  // Standardised Salary Ranges (in Lakhs Per Annum - L.P.A)
+  SALARY_LPA: [
+    { label: "Upto ₹2 Lakhs", value: "0-2L" },
+    { label: "₹2 Lakhs - ₹5 Lakhs", value: "2L-5L" },
+    { label: "₹5 Lakhs - ₹10 Lakhs", value: "5L-10L" },
+    { label: "₹10 Lakhs - ₹20 Lakhs", value: "10L-20L" },
+    { label: "₹20 Lakhs and above", value: "20L+" },
+  ],
+  // --- Family Details ---
+  HOUSE_TYPE: [
+    { label: "Own House", value: "Own" },
+    { label: "Rented House", value: "Rented" },
+    { label: "Company Lease", value: "Lease" },
+  ],
+  YES_NO: [
+    { label: "Yes", value: "Yes" },
+    { label: "No", value: "No" },
+  ],
+  // --- Habits ---
+  HABITS: [
+    { label: "No", value: "No" },
+    { label: "Occasionally", value: "Occasionally" },
+    { label: "Regularly", value: "Regularly" },
+  ],
+  // --- Partner Preference ---
+  PARTNER_AGE: [
+    { label: "18 - 25", value: "18-25" },
+    { label: "25 - 30", value: "25-30" },
+    { label: "30 - 35", value: "30-35" },
+    { label: "35+", value: "35+" },
+  ],
+  PARTNER_MARITAL_STATUS: [
+    { label: "Never Married", value: "Never Married" },
+    { label: "Divorced", value: "Divorced" },
+    { label: "Widowed", value: "Widowed" },
+  ],
+};
+
+// ===================================================================
+// 2. INTERFACES AND INITIAL VALUES
+// ===================================================================
+
+interface ProfileFormValues {
+  // Step 1: Basic Details
+  name: string;
+  dob: Date; // Use Date object for date picker
+  birthTime: Date; // Use Date object for time picker
+  homeTown: string;
+  religion: string;
+  subCaste: string;
+  rasi: string;
+  star: string;
+  color: string;
+  height: string;
+  weight: string;
+  food: string;
+  motherTongue: string;
+  chevvaiDhosam: string;
+  goldPown: string; // Gold is typically in 'Pown' in Tamil Nadu
+  physicalChallenge: string;
+  photos: string[];
+
+  // Step 2: Professional & Education
+  job: string;
+  salary: string;
+  jobPlace: string;
+  education: string;
+
+  // Step 3: Family Details
+  fatherName: string;
+  fatherJob: string;
+  motherName: string;
+  motherJob: string;
+  houseType: string;
+  loan: string;
+  loanAmount: string;
+  vehicles: string;
+  marriedBrothers: number;
+  unmarriedBrothers: number;
+  marriedSisters: number;
+  unmarriedSisters: number;
+  smoking: string;
+  drinking: string;
+
+  // Step 4: Contact Details
+  mobile: string;
+  altNumber: string;
+  email: string;
+
+  // Step 5: Partner Preference
+  partnerAge: string;
+  partnerHeight: string;
+  partnerMaritalStatus: string;
+  partnerPhysicalStatus: string;
+  partnerMotherTongue: string;
+  partnerReligion: string;
+  partnerSubCaste: string;
+  partnerChevvaiDhosam: string;
+  partnerEducation: string;
+  partnerJob: string;
+  partnerSalary: string;
+  partnerCity: string;
+  partnerCountry: string;
+  partnerEatingHabits: string;
+  partnerDrinkingHabit: string;
+  partnerSmokingHabit: string;
+  partnerColor: string;
+  partnerGoldPown: string;
+  partnerContact: string;
 }
 
-export default function ProfileForm({ navigation }: any) {
-  const [expandedStep, setExpandedStep] = useState<number | null>(1);
+const initialValues: ProfileFormValues = {
+  // Step 1
+  name: "",
+  dob: new Date(),
+  birthTime: new Date(new Date().setHours(12, 0, 0, 0)), // Default to noon for time
+  homeTown: "Madurai", // Pre-filled as per user request
+  religion: "Hindu",
+  subCaste: "",
+  rasi: "",
+  star: "",
+  color: "",
+  height: "",
+  weight: "",
+  food: "Vegetarian",
+  motherTongue: "Tamil",
+  chevvaiDhosam: "No",
+  goldPown: "",
+  physicalChallenge: "None",
+  photos: [],
 
-  const steps: Step[] = [
-    { id: 1, label: "Basic Details" },
-    { id: 2, label: "Professional Details" },
-    { id: 3, label: "Family Details" },
-    { id: 4, label: "Contact Details" },
-    { id: 5, label: "Partner Preferences" },
-  ];
+  // Step 2
+  job: "",
+  salary: "",
+  jobPlace: "Madurai",
+  education: "",
 
-  const toggleStep = (id: number) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedStep(expandedStep === id ? null : id);
-  };
+  // Step 3
+  fatherName: "",
+  fatherJob: "",
+  motherName: "",
+  motherJob: "",
+  houseType: "Own House",
+  loan: "No",
+  loanAmount: "0",
+  vehicles: "",
+  marriedBrothers: 0,
+  unmarriedBrothers: 0,
+  marriedSisters: 0,
+  unmarriedSisters: 0,
+  smoking: "No",
+  drinking: "No",
 
-  /*** Dropdowns ***/
-  const [homeTownOpen, setHomeTownOpen] = useState(false);
-  const [homeTownItems, setHomeTownItems] = useState([
-    { label: "Madurai", value: "madurai" },
-    { label: "Chennai", value: "chennai" },
-  ]);
+  // Step 4
+  mobile: "",
+  altNumber: "",
+  email: "",
 
-  const [jobOpen, setJobOpen] = useState(false);
-  const [jobItems, setJobItems] = useState([
-    { label: "Engineer", value: "engineer" },
-    { label: "Doctor", value: "doctor" },
-  ]);
+  // Step 5
+  partnerAge: "25 - 30",
+  partnerHeight: "5' 3\" - 160 cm",
+  partnerMaritalStatus: "Never Married",
+  partnerPhysicalStatus: "None",
+  partnerMotherTongue: "Tamil",
+  partnerReligion: "Hindu",
+  partnerSubCaste: "Iyer",
+  partnerChevvaiDhosam: "No",
+  partnerEducation: "B.E. / B.Tech",
+  partnerJob: "Software Engineer",
+  partnerSalary: "5 Lakhs - 10 Lakhs",
+  partnerCity: "Madurai",
+  partnerCountry: "India",
+  partnerEatingHabits: "Vegetarian",
+  partnerDrinkingHabit: "No",
+  partnerSmokingHabit: "No",
+  partnerColor: "Fair",
+  partnerGoldPown: "5",
+  partnerContact: "Parents",
+};
 
-  /*** Formik schema ***/
-  const validationSchema = Yup.object().shape({
+// ===================================================================
+// 3. VALIDATION SCHEMAS
+// ===================================================================
+
+const baseSchema = {
     name: Yup.string().required("Name is required"),
-    homeTown: Yup.string().required("Select Home Town"),
-    job: Yup.string().required("Select Job"),
-  });
+    homeTown: Yup.string().required("Home Town is required (Madurai)"),
+    religion: Yup.string().required("Religion is required"),
+    subCaste: Yup.string().required("Sub-Caste is required"),
+};
+
+const validationSchemas = [
+  // Step 1: Basic Details
+  Yup.object().shape({
+    ...baseSchema,
+    rasi: Yup.string().required("Rasi is required"),
+    star: Yup.string().required("Star is required"),
+    height: Yup.string().required("Height is required"),
+    weight: Yup.string().required("Weight is required"),
+  }),
+  // Step 2: Professional & Education
+  Yup.object().shape({
+    education: Yup.string().required("Highest Education is required"),
+    job: Yup.string().required("Job Title is required"),
+    salary: Yup.string().required("Annual Salary is required"),
+    jobPlace: Yup.string().required("Work Place is required"),
+  }),
+  // Step 3: Family Details
+  Yup.object().shape({
+    fatherName: Yup.string().required("Father's Name is required"),
+    motherName: Yup.string().required("Mother's Name is required"),
+    houseType: Yup.string().required("House Type is required"),
+    marriedBrothers: Yup.number().min(0, "Cannot be negative"),
+    unmarriedBrothers: Yup.number().min(0, "Cannot be negative"),
+  }),
+  // Step 4: Contact Details
+  Yup.object().shape({
+    mobile: Yup.string()
+      .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+      .required("Mobile number is required"),
+    email: Yup.string().email("Invalid email format").required("Email is required"),
+  }),
+  // Step 5: Partner Preference (No validation for simplicity, but can be added)
+  Yup.object().shape({
+    partnerAge: Yup.string().required("Preferred age is required"),
+  }),
+];
+
+// ===================================================================
+// 4. HELPER COMPONENTS
+// ===================================================================
+
+const steps = [
+  "1. Basic & Horoscope Details",
+  "2. Professional & Education",
+  "3. Family Details",
+  "4. Contact Details",
+  "5. Partner Preference",
+];const ErrorText: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Text style={styles.errorText}>{children}</Text>
+);
+
+interface DropdownProps {
+  label: string;
+  name: keyof ProfileFormValues;
+  formik: any; // Use a proper type if you can, but 'any' is common for quick Formik usage
+  items: ItemType<string>[];
+  zIndex?: number;
+}
+
+const CustomDropdown: React.FC<DropdownProps> = ({ label, name, formik, items, zIndex = 1 }) => {
+  const [open, setOpen] = useState(false);
+  const [dropdownItems, setDropdownItems] = useState<ItemType<string>[]>(items);
+
+  const value = formik.values[name];
 
   return (
-        <View style={{ flex: 1 }}>
-       <CustomHeader title="complete your Profile" showBackButton />
+ <View style={[styles.dropdownContainer, { zIndex }]}>
+  <Text style={styles.label}>{label}</Text>
+  <DropDownPicker
+    open={open}
+    value={value}
+    items={dropdownItems}
+    setOpen={setOpen}
+    setItems={setDropdownItems}  // ✅ required
+    setValue={(callback) => {
+      const val = typeof callback === "function" ? callback(value) : callback;
+      formik.setFieldValue(name, val);
+    }}                             // ✅ required for single select
+    multiple={false}              // ✅ single selection
+    placeholder={`Select ${label}`}
+    style={styles.dropdown}
+    dropDownContainerStyle={styles.dropdownMenu}
+  />
+  {formik.touched[name] && formik.errors[name] && (
+    <ErrorText>{formik.errors[name] as string}</ErrorText>
+  )}
+</View>
 
-    <ScrollView style={{ flex: 1, padding: 16 }}>
-      <Text style={styles.title}>Complete Your Profile</Text>
+  );
+};
 
-      {steps.map((step) => (
-        <View key={step.id}>
-          {/* Step Header */}
-          <TouchableOpacity style={styles.stepHeader} onPress={() => toggleStep(step.id)}>
-            <Text style={styles.stepLabel}>{step.label}</Text>
-            <Ionicons
-              name={expandedStep === step.id ? "chevron-up" : "chevron-down"}
-              size={24}
-              color="#333"
-            />
-          </TouchableOpacity>
 
-          {/* Step Content */}
-          {expandedStep === step.id && (
-            <View style={styles.stepContent}>
-              <Formik
-                initialValues={{
-                  name: "",
-                  homeTown: "",
-                  job: "",
-                }}
-                validationSchema={validationSchema}
-                onSubmit={(values) => {
-                  console.log("Saved Values:", values);
-                  if (step.id < steps.length) {
-                    setExpandedStep(step.id + 1); // auto expand next step
-                  } else {
-                    alert("Profile Completed!");
-                    navigation.goBack();
-                  }
-                }}
-              >
-                {({ handleChange, setFieldValue, handleSubmit, values, errors, touched }) => (
-                  <>
-                    {step.id === 1 && (
-                      <>
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Name"
-                          value={values.name}
-                          onChangeText={handleChange("name")}
-                        />
-                        {touched.name && errors.name && <Text style={styles.error}>{errors.name}</Text>}
 
-                        <DropDownPicker
-                          open={homeTownOpen}
-                          value={values.homeTown}
-                          items={homeTownItems}
-                          setOpen={setHomeTownOpen}
-                          setValue={(val) => setFieldValue("homeTown", val())}
-                          setItems={setHomeTownItems}
-                          placeholder="Home Town"
-                          style={{ marginTop: 10 }}
-                        />
-                        {touched.homeTown && errors.homeTown && (
-                          <Text style={styles.error}>{errors.homeTown}</Text>
-                        )}
-                      </>
-                    )}
+// ===================================================================
+// 5. MAIN FORM COMPONENT
+// ===================================================================
 
-                    {step.id === 2 && (
-                      <DropDownPicker
-                        open={jobOpen}
-                        value={values.job}
-                        items={jobItems}
-                        setOpen={setJobOpen}
-                        setValue={(val) => setFieldValue("job", val())}
-                        setItems={setJobItems}
-                        placeholder="Job"
-                      />
-                    )}
+export default function ProfileForm() {
+  const [expandedStep, setExpandedStep] = useState(1);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [currentPickerTarget, setCurrentPickerTarget] = useState<"dob" | "birthTime" | null>(null);
 
-                    <TouchableOpacity style={styles.saveButton} onPress={() => handleSubmit()}>
-                      <Text style={styles.saveButtonText}>Save</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </Formik>
-            </View>
-          )}
-        </View>
-      ))}
-    </ScrollView>
+  const toggleStep = (stepId: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedStep(expandedStep === stepId ? 0 : stepId);
+  };
+  
+  const showPicker = (target: "dob" | "birthTime", initialDate: Date) => {
+    setCurrentPickerTarget(target);
+    if (Platform.OS === 'web') {
+      Alert.alert("Native Picker Only", "Date/Time picker dialogs are only visible on a mobile device (iOS/Android).");
+      return;
+    }
+    if (target === "dob") {
+      setShowDatePicker(true);
+    } else if (target === "birthTime") {
+      setShowTimePicker(true);
+    }
+  };
+
+  const onFormSubmit = async (values: ProfileFormValues, actions: FormikHelpers<ProfileFormValues>) => {
+    // 1. Validate the final step
+    try {
+      await validationSchemas[4].validate(values, { abortEarly: false });
+    } catch (err) {
+      // If validation fails, navigate to the error step
+      Alert.alert("Validation Error", "Please fill all required fields in Step 5.");
+      setExpandedStep(5);
+      actions.setSubmitting(false);
+      return;
+    }
+    
+    // 2. Final Submission Logic
+    console.log("--- FINAL FORM DATA ---");
+    console.log("Name:", values.name);
+    console.log("DOB:", values.dob.toLocaleDateString('en-IN'));
+    console.log("Birth Time:", values.birthTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
+    console.log("Home Town:", values.homeTown);
+    console.log("Sub-Caste:", values.subCaste);
+    console.log("Salary:", values.salary);
+    console.log("---");
+    
+    Alert.alert(
+      "Profile Submission Successful!",
+      "Your profile data has been successfully collected. (Check console for full data)"
+    );
+
+    actions.setSubmitting(false);
+    // navigation.navigate('SuccessScreen'); // Example navigation
+  };
+  
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Madurai Matrimony Profile</Text>
+      </View>
+
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchemas[expandedStep - 1] || Yup.object().shape({})}
+        onSubmit={onFormSubmit}
+        enableReinitialize={true} // Re-validate on step change
+      >
+        {({ values, handleChange, handleBlur, handleSubmit, setFieldValue, touched, errors, isSubmitting }) => {
+          
+          // Shared handler for both date and time selection
+          const onDateTimeChange = (event: any, selectedDate?: Date) => {
+            setShowDatePicker(false);
+            setShowTimePicker(false);
+            
+            if (event.type === 'set' && selectedDate) { // 'set' action on Android/iOS
+              if (currentPickerTarget === "dob") {
+                setFieldValue("dob", selectedDate);
+              } else if (currentPickerTarget === "birthTime") {
+                setFieldValue("birthTime", selectedDate);
+              }
+            }
+            setCurrentPickerTarget(null);
+          };
+          
+          const validateAndAdvance = async () => {
+            const currentSchema = validationSchemas[expandedStep - 1];
+            try {
+              await currentSchema.validate(values, { abortEarly: false });
+              if (expandedStep < steps.length) {
+                toggleStep(expandedStep + 1);
+              } else {
+                handleSubmit();
+              }
+            } catch (err) {
+              Alert.alert("Error", "Please fill all required fields correctly before proceeding.");
+              // Formik's internal validation will populate the error messages
+            }
+          };
+
+          return (
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+              
+              {/* --- DATE/TIME PICKER MODAL --- */}
+              {showDatePicker && (
+                <DateTimePicker
+                  testID="datePicker"
+                  value={values.dob as Date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDateTimeChange}
+                />
+              )}
+
+              {showTimePicker && (
+                <DateTimePicker
+                  testID="timePicker"
+                  value={values.birthTime as Date}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDateTimeChange}
+                  is24Hour={true}
+                />
+              )}
+              {/* --- END DATE/TIME PICKER --- */}
+
+              {steps.map((label, stepId) => (
+                <View key={stepId} style={{ zIndex: steps.length - stepId }}>
+                  <TouchableOpacity
+                    style={styles.stepHeader}
+                    onPress={() => toggleStep(stepId + 1)}
+                  >
+                    <Text style={styles.stepHeaderText}>{label}</Text>
+                    <Ionicons
+                      name={expandedStep === stepId + 1 ? "chevron-up" : "chevron-down"}
+                      size={20}
+                      color="#006400"
+                    />
+                  </TouchableOpacity>
+
+                  {expandedStep === stepId + 1 && (
+                    <View style={styles.stepContent}>
+                      {/* ==================================== */}
+                      {/* STEP 1: Basic & Horoscope Details */}
+                      {/* ==================================== */}
+                      {stepId === 0 && (
+                        <>
+                          {/* Name */}
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Full Name"
+                            onChangeText={handleChange('name')}
+                            onBlur={handleBlur('name')}
+                            value={values.name}
+                          />
+                          {touched.name && errors.name && <ErrorText>{errors.name}</ErrorText>}
+
+                          {/* DOB - Date Picker Trigger */}
+                          <TouchableOpacity 
+                            style={styles.input} 
+                            onPress={() => showPicker("dob", values.dob as Date)}
+                          >
+                            <Text style={values.dob ? styles.pickerText : styles.placeholderText}>
+                              {values.dob ? `DOB: ${values.dob.toLocaleDateString('en-IN')}` : "Date of Birth (DOB) *"}
+                            </Text>
+                          </TouchableOpacity>
+                          {/* Birth Time - Time Picker Trigger */}
+                          <TouchableOpacity 
+                            style={styles.input} 
+                            onPress={() => showPicker("birthTime", values.birthTime as Date)}
+                          >
+                            <Text style={values.birthTime ? styles.pickerText : styles.placeholderText}>
+                              {values.birthTime ? `Birth Time: ${values.birthTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : "Birth Time *"}
+                            </Text>
+                          </TouchableOpacity>
+                          
+                          {/* Home Town */}
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Home Town (e.g., Madurai)"
+                            onChangeText={handleChange('homeTown')}
+                            onBlur={handleBlur('homeTown')}
+                            value={values.homeTown}
+                          />
+                          {touched.homeTown && errors.homeTown && <ErrorText>{errors.homeTown}</ErrorText>}
+
+                          <CustomDropdown label="Religion *" name="religion" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RELIGION} zIndex={10} />
+                          <CustomDropdown label="Sub-Caste *" name="subCaste" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SUBCASTE} zIndex={9} />
+                          <CustomDropdown label="Rasi (Moon Sign) *" name="rasi" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RASI} zIndex={8} />
+                          <CustomDropdown label="Star / Nakshatra *" name="star" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.STAR} zIndex={7} />
+                          <CustomDropdown label="Complexion *" name="color" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.COMPLEXION} zIndex={6} />
+                          <CustomDropdown label="Height *" name="height" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HEIGHT} zIndex={5} />
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Weight (in kg)"
+                            keyboardType="numeric"
+                            onChangeText={handleChange('weight')}
+                            onBlur={handleBlur('weight')}
+                            value={values.weight}
+                          />
+                          {touched.weight && errors.weight && <ErrorText>{errors.weight}</ErrorText>}
+
+                          <CustomDropdown label="Food Habits *" name="food" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.FOOD} zIndex={4} />
+                          <CustomDropdown label="Mother Tongue *" name="motherTongue" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.MOTHER_TONGUE} zIndex={3} />
+                          <CustomDropdown label="Chevvai Dhosam *" name="chevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={2} />
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Gold (Pown)"
+                            keyboardType="numeric"
+                            onChangeText={handleChange('goldPown')}
+                            onBlur={handleBlur('goldPown')}
+                            value={values.goldPown}
+                          />
+
+                          <CustomDropdown label="Physical Challenge *" name="physicalChallenge" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PHYSICAL_CHALLENGE} zIndex={1} />
+                        </>
+                      )}
+
+                      {/* ==================================== */}
+                      {/* STEP 2: Professional & Education */}
+                      {/* ==================================== */}
+                      {stepId === 1 && (
+                        <>
+                          <CustomDropdown label="Highest Education *" name="education" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={4} />
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Job Title / Occupation *"
+                            onChangeText={handleChange('job')}
+                            onBlur={handleBlur('job')}
+                            value={values.job}
+                          />
+                          {touched.job && errors.job && <ErrorText>{errors.job}</ErrorText>}
+
+                          <CustomDropdown label="Annual Salary (LPA) *" name="salary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={3} />
+                          
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Work Place / City (e.g., Madurai)"
+                            onChangeText={handleChange('jobPlace')}
+                            onBlur={handleBlur('jobPlace')}
+                            value={values.jobPlace}
+                          />
+                          {touched.jobPlace && errors.jobPlace && <ErrorText>{errors.jobPlace}</ErrorText>}
+                        </>
+                      )}
+
+                      {/* ==================================== */}
+                      {/* STEP 3: Family Details */}
+                      {/* ==================================== */}
+                      {stepId === 2 && (
+                        <>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Father's Name *"
+                            onChangeText={handleChange('fatherName')}
+                            onBlur={handleBlur('fatherName')}
+                            value={values.fatherName}
+                          />
+                          {touched.fatherName && errors.fatherName && <ErrorText>{errors.fatherName}</ErrorText>}
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Father's Job / Occupation"
+                            onChangeText={handleChange('fatherJob')}
+                            onBlur={handleBlur('fatherJob')}
+                            value={values.fatherJob}
+                          />
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Mother's Name *"
+                            onChangeText={handleChange('motherName')}
+                            onBlur={handleBlur('motherName')}
+                            value={values.motherName}
+                          />
+                          {touched.motherName && errors.motherName && <ErrorText>{errors.motherName}</ErrorText>}
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Mother's Job / Occupation"
+                            onChangeText={handleChange('motherJob')}
+                            onBlur={handleBlur('motherJob')}
+                            value={values.motherJob}
+                          />
+                          
+                          <CustomDropdown label="House Type *" name="houseType" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOUSE_TYPE} zIndex={4} />
+                          <CustomDropdown label="Family Loan? *" name="loan" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.YES_NO} zIndex={3} />
+                          
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Loan Amount (if Yes, e.g., 10L)"
+                            onChangeText={handleChange('loanAmount')}
+                            onBlur={handleBlur('loanAmount')}
+                            value={values.loanAmount}
+                          />
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Vehicles Owned"
+                            onChangeText={handleChange('vehicles')}
+                            onBlur={handleBlur('vehicles')}
+                            value={values.vehicles}
+                          />
+
+                          <Text style={styles.siblingLabel}>Siblings</Text>
+                          <View style={styles.row}>
+                            <TextInput
+                                style={[styles.input, { flex: 1, marginRight: 10 }]}
+                                placeholder="M. Bro"
+                                keyboardType="numeric"
+                                onChangeText={(text) => setFieldValue('marriedBrothers', Number(text))}
+                                onBlur={handleBlur('marriedBrothers')}
+                                value={values.marriedBrothers.toString()}
+                            />
+                            <TextInput
+                                style={[styles.input, { flex: 1, marginRight: 10 }]}
+                                placeholder="U. Bro"
+                                keyboardType="numeric"
+                                onChangeText={(text) => setFieldValue('unmarriedBrothers', Number(text))}
+                                onBlur={handleBlur('unmarriedBrothers')}
+                                value={values.unmarriedBrothers.toString()}
+                            />
+                             <TextInput
+                                style={[styles.input, { flex: 1, marginRight: 10 }]}
+                                placeholder="M. Sis"
+                                keyboardType="numeric"
+                                onChangeText={(text) => setFieldValue('marriedSisters', Number(text))}
+                                onBlur={handleBlur('marriedSisters')}
+                                value={values.marriedSisters.toString()}
+                            />
+                             <TextInput
+                                style={[styles.input, { flex: 1 }]}
+                                placeholder="U. Sis"
+                                keyboardType="numeric"
+                                onChangeText={(text) => setFieldValue('unmarriedSisters', Number(text))}
+                                onBlur={handleBlur('unmarriedSisters')}
+                                value={values.unmarriedSisters.toString()}
+                            />
+                          </View>
+
+                          <CustomDropdown label="Smoking Habit" name="smoking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={2} />
+                          <CustomDropdown label="Drinking Habit" name="drinking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={1} />
+                        </>
+                      )}
+
+                      {/* ==================================== */}
+                      {/* STEP 4: Contact Details */}
+                      {/* ==================================== */}
+                      {stepId === 3 && (
+                        <>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Mobile Number *"
+                            keyboardType="phone-pad"
+                            onChangeText={handleChange('mobile')}
+                            onBlur={handleBlur('mobile')}
+                            value={values.mobile}
+                          />
+                          {touched.mobile && errors.mobile && <ErrorText>{errors.mobile}</ErrorText>}
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Alternate Number"
+                            keyboardType="phone-pad"
+                            onChangeText={handleChange('altNumber')}
+                            onBlur={handleBlur('altNumber')}
+                            value={values.altNumber}
+                          />
+
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Email Address *"
+                            keyboardType="email-address"
+                            onChangeText={handleChange('email')}
+                            onBlur={handleBlur('email')}
+                            value={values.email}
+                            autoCapitalize="none"
+                          />
+                          {touched.email && errors.email && <ErrorText>{errors.email}</ErrorText>}
+                        </>
+                      )}
+
+                      {/* ==================================== */}
+                      {/* STEP 5: Partner Preference */}
+                      {/* ==================================== */}
+                      {stepId === 4 && (
+                        <>
+                          <Text style={styles.preferenceTitle}>Desired Partner Attributes</Text>
+                          <CustomDropdown label="Age Range" name="partnerAge" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_AGE} zIndex={10} />
+                          <CustomDropdown label="Marital Status" name="partnerMaritalStatus" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_MARITAL_STATUS} zIndex={9} />
+                          <CustomDropdown label="Religion" name="partnerReligion" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RELIGION} zIndex={8} />
+                          <CustomDropdown label="Sub-Caste" name="partnerSubCaste" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SUBCASTE} zIndex={7} />
+                          <CustomDropdown label="Education" name="partnerEducation" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={6} />
+                          <CustomDropdown label="Annual Salary (LPA)" name="partnerSalary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={5} />
+                          <CustomDropdown label="Chevvai Dhosam" name="partnerChevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={4} />
+
+                          <TextInput style={styles.input} placeholder="Preferred Job / Occupation" onChangeText={handleChange('partnerJob')} value={values.partnerJob} />
+                          <TextInput style={styles.input} placeholder="Preferred City (e.g., Madurai)" onChangeText={handleChange('partnerCity')} value={values.partnerCity} />
+                          <TextInput style={styles.input} placeholder="Contact Via (e.g., Parents, Self)" onChangeText={handleChange('partnerContact')} value={values.partnerContact} />
+                        </>
+                      )}
+
+                      {/* Next/Save Button */}
+                      <TouchableOpacity
+                        style={styles.nextButton}
+                        onPress={validateAndAdvance}
+                        disabled={isSubmitting}
+                      >
+                        <Text style={styles.nextButtonText}>
+                          {stepId === steps.length - 1 ? (isSubmitting ? "Submitting..." : "Save Profile") : "Next Step"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              ))}
+
+              <View style={{ height: 50 }} />
+            </ScrollView>
+          );
+        }}
+      </Formik>
     </View>
   );
 }
 
+// ===================================================================
+// 6. STYLES
+// ===================================================================
+
 const styles = StyleSheet.create({
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
-  stepHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  stepLabel: { fontSize: 16, fontWeight: "600" },
-  stepContent: { paddingVertical: 12 },
-  input: {
+  header: {
+    padding: 15,
+    backgroundColor: '#006400', // Dark Green
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 50 : 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  headerText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 15,
+  },
+  contentContainer: {
+    paddingBottom: 30,
+    paddingTop: 10,
+  },
+  stepHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#e6ffe6', // Light Green
+    padding: 15,
+    borderRadius: 8,
+    marginVertical: 5,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 10,
+    borderColor: '#006400',
+  },
+  stepHeaderText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#006400',
+  },
+  stepContent: {
+    padding: 15,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
     marginBottom: 10,
   },
-  error: { color: "red", marginBottom: 8 },
-  saveButton: {
-    backgroundColor: "#F18221",
-    padding: 14,
+  // --- Input Styles ---
+  input: {
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
     borderRadius: 8,
-    alignItems: "center",
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: '#fff',
+    justifyContent: 'center', // for text in TouchableOpacity
+  },
+  pickerText: {
+    color: '#333',
+    fontSize: 14,
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 14,
+  },
+  errorText: {
+    fontSize: 12,
+    color: 'red',
+    marginBottom: 10,
+    marginTop: -10,
+  },
+  // --- Dropdown Styles ---
+  dropdownContainer: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 5,
+    fontWeight: '600',
+  },
+  dropdown: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    height: 50,
+  },
+  dropdownMenu: {
+    borderColor: '#ccc',
+  },
+  // --- Button Styles ---
+  nextButton: {
+    backgroundColor: '#FF4500', // Orange-Red for action
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
     marginTop: 10,
   },
-  saveButtonText: { color: "#fff", fontWeight: "600" },
+  nextButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  siblingLabel: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 5,
+    marginTop: 5,
+    fontWeight: '600',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  preferenceTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#006400',
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingBottom: 5,
+  }
 });
