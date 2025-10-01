@@ -57,6 +57,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="ProfileForm"
+        options={{
+          href: null,          // Hidden from the bottom tab menu
+          headerShown: false,  // Set to true if you want header
+        }}
+      />
+          <Tabs.Screen
         name="ProfileDetails"
         options={{
           href: null,          // Hidden from the bottom tab menu
