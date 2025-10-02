@@ -128,6 +128,35 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password reset successful' });
+    const handleResetPassword = async () => {
+  try {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobileNo, otp, newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Alert.alert('Error', data.message || 'Reset failed');
+      return;
+    }
+
+    // ✅ Clear any stored token/user info
+    await AsyncStorage.multiRemove(['token', 'user', 'expiry']);
+
+    // ✅ Dispatch logout in Redux (if using Redux)
+    dispatch(logout());
+
+    Alert.alert('Success', 'Password reset successful. Please login.');
+    router.replace('/(auth)/login'); // redirect to login page
+  } catch (err) {
+    console.error(err);
+    Alert.alert('Error', 'Something went wrong');
+  }
+};
+
   } catch (err) {
     console.error('Reset Password Error:', err);
     res.status(500).json({ message: 'Server error' });

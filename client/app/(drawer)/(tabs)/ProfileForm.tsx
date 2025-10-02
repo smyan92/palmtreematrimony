@@ -28,6 +28,59 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 const TAMIL_DROPDOWN_DATA = {
   // --- Profile Details ---
+
+HOMETOWN: [
+  { label: 'Chennai', value: 'Chennai' },
+    { label: 'Coimbatore', value: 'Coimbatore' },
+    { label: 'Madurai', value: 'Madurai' },
+    { label: 'Tiruchirappalli', value: 'Tiruchirappalli' },
+    { label: 'Salem', value: 'Salem' },
+    { label: 'Ambattur', value: 'Ambattur' },
+    { label: 'Tirunelveli', value: 'Tirunelveli' },
+    { label: 'Tiruppur', value: 'Tiruppur' },
+    { label: 'Avadi', value: 'Avadi' },
+    { label: 'Tiruvottiyur', value: 'Tiruvottiyur' },
+    { label: 'Thoothukkudi', value: 'Thoothukkudi' },
+    { label: 'Nagercoil', value: 'Nagercoil' },
+    { label: 'Thanjavur', value: 'Thanjavur' },
+    { label: 'Pallavaram', value: 'Pallavaram' },
+    { label: 'Dindigul', value: 'Dindigul' },
+    { label: 'Vellore', value: 'Vellore' },
+    { label: 'Tambaram', value: 'Tambaram' },
+    { label: 'Cuddalore', value: 'Cuddalore' },
+    { label: 'Kancheepuram', value: 'Kancheepuram' },
+    { label: 'Alandur', value: 'Alandur' },
+    { label: 'Erode', value: 'Erode' },
+    { label: 'Tiruvannamalai', value: 'Tiruvannamalai' },
+    { label: 'Kumbakonam', value: 'Kumbakonam' },
+    { label: 'Rajapalayam', value: 'Rajapalayam' },
+    { label: 'Kurichi', value: 'Kurichi' },
+    { label: 'Madavaram', value: 'Madavaram' },
+    { label: 'Pudukkottai', value: 'Pudukkottai' },
+    { label: 'Hosur', value: 'Hosur' },
+    { label: 'Ambur', value: 'Ambur' },
+    { label: 'Karaikkudi', value: 'Karaikkudi' },
+    { label: 'Neyveli', value: 'Neyveli' },
+    { label: 'Nagapattinam', value: 'Nagapattinam' },
+       { label: 'Bengaluru', value: 'Bengaluru' },
+    { label: 'Hyderabad', value: 'Hyderabad' },
+    { label: 'Mumbai', value: 'Mumbai' },
+    { label: 'Delhi', value: 'Delhi' },
+    { label: 'Kolkata', value: 'Kolkata' },
+    { label: 'Pune', value: 'Pune' },
+    { label: 'Jaipur', value: 'Jaipur' },
+    { label: 'Lucknow', value: 'Lucknow' },
+    { label: 'Nagpur', value: 'Nagpur' },
+    { label: 'Visakhapatnam', value: 'Visakhapatnam' },
+    { label: 'Bhubaneswar', value: 'Bhubaneswar' },
+    { label: 'Chandigarh', value: 'Chandigarh' },
+    { label: 'Gurugram', value: 'Gurugram' },
+    { label: 'Noida', value: 'Noida' },
+    { label: 'Kochi', value: 'Kochi' },
+    { label: 'Vijayawada', value: 'Vijayawada' },
+],
+
+
   RELIGION: [
     { label: "Hindu", value: "Hindu" },
     { label: "Christian", value: "Christian" },
@@ -36,20 +89,35 @@ const TAMIL_DROPDOWN_DATA = {
     { label: "Other", value: "Other" },
   ],
   // Common Tamil Subcastes
-  SUBCASTE: [
-    { label: "Iyer", value: "Iyer" },
-    { label: "Iyengar", value: "Iyengar" },
-    { label: "Nadar", value: "Nadar" },
-    { label: "Mudaliar", value: "Mudaliar" },
-    { label: "Gounder", value: "Gounder" },
-    { label: "Thevar", value: "Thevar" },
-    { label: "Chettiar", value: "Chettiar" },
-    { label: "Vanniyar", value: "Vanniyar" },
-    { label: "Pillai", value: "Pillai" },
-    { label: "Naidu", value: "Naidu" },
-    { label: "Adi Dravida", value: "Adi Dravida" },
-    { label: "Other", value: "Other" },
-  ],
+SUBCASTE: [
+  // Hindu Nadar Subcastes
+  { label: "Nadar (General)", value: "Nadar" },
+  { label: "Gramani Nadar", value: "Gramani Nadar" },
+  { label: "Shanar Nadar", value: "Shanar Nadar" },
+  { label: "Santror Nadar", value: "Santror Nadar" },
+  { label: "Nanjil Nadar", value: "Nanjil Nadar" },
+  { label: "Kongu Nadar", value: "Kongu Nadar" },
+  { label: "Nattathi Nadar", value: "Nattathi Nadar" },
+  { label: "Kovil Nadar", value: "Kovil Nadar" },
+  { label: "Perunthondaman Nadar", value: "Perunthondaman Nadar" },
+  { label: "Karukkupattai Nadar", value: "Karukkupattai Nadar" },
+  { label: "Melnattar Nadar", value: "Melnattar Nadar" },
+  { label: "Thennattar Nadar", value: "Thennattar Nadar" },
+
+  // Christian Nadar Subcastes
+  { label: "Roman Catholic Nadar", value: "Roman Catholic Nadar" },
+  { label: "Protestant Nadar", value: "Protestant Nadar" },
+  { label: "CSI Nadar", value: "CSI Nadar" },
+  { label: "Pentecostal Nadar", value: "Pentecostal Nadar" },
+  { label: "Seventh Day Adventist Nadar", value: "Seventh Day Adventist Nadar" },
+  { label: "Evangelical Nadar", value: "Evangelical Nadar" },
+  { label: "Independent Church Nadar", value: "Independent Church Nadar" },
+
+  // Generic
+  { label: "Other Nadar", value: "Other Nadar" },
+],
+
+
   // Major Rasi options
   RASI: [
     { label: "Mesham (Aries)", value: "Mesham" },
@@ -101,26 +169,73 @@ const TAMIL_DROPDOWN_DATA = {
     { label: "Wheatish", value: "Wheatish" },
     { label: "Dark", value: "Dark" },
   ],
-  HEIGHT: [
-    { label: "5' 0\" - 152 cm", value: "5' 0\"" },
-    { label: "5' 3\" - 160 cm", value: "5' 3\"" },
-    { label: "5' 6\" - 168 cm", value: "5' 6\"" },
-    { label: "5' 9\" - 175 cm", value: "5' 9\"" },
-    { label: "6' 0\" - 183 cm", value: "6' 0\"" },
-    { label: "6' 3\" - 191 cm", value: "6' 3\"" },
-    { label: "6' 6\" - 198 cm", value: "6' 6\"" },
-  ],
+HEIGHT: [
+  { label: "2' 0\" - 61 cm", value: "2' 0\"" },
+  { label: "2' 3\" - 69 cm", value: "2' 3\"" },
+  { label: "2' 6\" - 76 cm", value: "2' 6\"" },
+  { label: "2' 9\" - 84 cm", value: "2' 9\"" },
+  { label: "3' 0\" - 91 cm", value: "3' 0\"" },
+  { label: "3' 3\" - 99 cm", value: "3' 3\"" },
+  { label: "3' 6\" - 107 cm", value: "3' 6\"" },
+  { label: "3' 9\" - 114 cm", value: "3' 9\"" },
+  { label: "4' 0\" - 122 cm", value: "4' 0\"" },
+  { label: "4' 3\" - 130 cm", value: "4' 3\"" },
+  { label: "4' 6\" - 137 cm", value: "4' 6\"" },
+  { label: "4' 9\" - 145 cm", value: "4' 9\"" },
+  { label: "5' 0\" - 152 cm", value: "5' 0\"" },
+  { label: "5' 3\" - 160 cm", value: "5' 3\"" },
+  { label: "5' 6\" - 168 cm", value: "5' 6\"" },
+  { label: "5' 9\" - 175 cm", value: "5' 9\"" },
+  { label: "6' 0\" - 183 cm", value: "6' 0\"" },
+  { label: "6' 3\" - 191 cm", value: "6' 3\"" },
+  { label: "6' 6\" - 198 cm", value: "6' 6\"" },
+  { label: "6' 9\" - 206 cm", value: "6' 9\"" },
+  { label: "7' 0\" - 213 cm", value: "7' 0\"" },
+  { label: "7' 3\" - 221 cm", value: "7' 3\"" },
+  { label: "7' 6\" - 229 cm", value: "7' 6\"" },
+  { label: "7' 9\" - 236 cm", value: "7' 9\"" },
+  { label: "8' 0\" - 244 cm", value: "8' 0\"" },
+  { label: "8' 3\" - 252 cm", value: "8' 3\"" },
+  { label: "8' 6\" - 259 cm", value: "8' 6\"" },
+  { label: "8' 9\" - 267 cm", value: "8' 9\"" },
+  { label: "8' 11\" - 272 cm", value: "8' 11\"" }, // Tallest recorded
+],
+
   FOOD: [
     { label: "Vegetarian", value: "Veg" },
     { label: "Non-Vegetarian", value: "Non-Veg" },
     { label: "Eggetarian", value: "Egg" },
   ],
-  MOTHER_TONGUE: [
-    { label: "Tamil", value: "Tamil" },
-    { label: "Telugu", value: "Telugu" },
-    { label: "Malayalam", value: "Malayalam" },
-    { label: "Kannada", value: "Kannada" },
-  ],
+MOTHER_TONGUE: [
+  // South Indian core
+  { label: "Tamil", value: "Tamil" },
+  { label: "Telugu", value: "Telugu" },
+  { label: "Malayalam", value: "Malayalam" },
+  { label: "Kannada", value: "Kannada" },
+
+  // North & Central Indian
+  { label: "Hindi", value: "Hindi" },
+  { label: "Marathi", value: "Marathi" },
+  { label: "Gujarati", value: "Gujarati" },
+  { label: "Punjabi", value: "Punjabi" },
+
+  // Neighboring countries
+  { label: "Sinhala", value: "Sinhala" },     // Sri Lanka
+  { label: "English (Sri Lankan)", value: "English (Sri Lankan)" },
+
+  // Worldwide migration (common languages spoken by diaspora Nadars)
+  { label: "English", value: "English" },
+  { label: "French", value: "French" },       // France, Canada
+  { label: "German", value: "German" },       // Germany
+  { label: "Dutch", value: "Dutch" },         // Netherlands
+  { label: "Spanish", value: "Spanish" },     // Spain, Latin America, US
+  { label: "Arabic", value: "Arabic" },       // Middle East (UAE, Saudi, Qatar, etc.)
+  { label: "Malay", value: "Malay" },         // Malaysia, Singapore
+  { label: "Chinese (Mandarin)", value: "Chinese (Mandarin)" },
+  { label: "Chinese (Cantonese)", value: "Chinese (Cantonese)" },
+  { label: "Thai", value: "Thai" },
+],
+
   CHEVVAI_DHOSAM: [
     { label: "Yes", value: "Yes" },
     { label: "No", value: "No" },
@@ -133,15 +248,60 @@ const TAMIL_DROPDOWN_DATA = {
   ],
   // --- Professional & Education ---
   EDUCATION: [
-    { label: "B.E. / B.Tech", value: "BE/BTech" },
-    { label: "M.E. / M.Tech / MCA", value: "ME/MTech/MCA" },
-    { label: "B.A. / B.Sc. / B.Com", value: "BA/BSc/BCom" },
-    { label: "M.A. / M.Sc. / M.Com", value: "MA/MSc/MCom" },
-    { label: "MBBS / BDS / BAMS", value: "Medical" },
-    { label: "CA / CS / ICWA", value: "Finance" },
-    { label: "Diploma / ITI", value: "Diploma/ITI" },
-    { label: "Other Graduate", value: "OtherGrad" },
-  ],
+  { "label": "Ph.D. / Doctoral Degree", "value": "PhD" },
+  { "label": "M.Tech (Master of Technology)", "value": "MTech" },
+  { "label": "M.E. (Master of Engineering)", "value": "ME" },
+  { "label": "M.C.A. (Master of Computer Applications)", "value": "MCA" },
+  { "label": "M.Sc. (Master of Science)", "value": "MSc" },
+  { "label": "M.A. (Master of Arts)", "value": "MA" },
+  { "label": "M.Com (Master of Commerce)", "value": "MCom" },
+  { "label": "B.Tech (Bachelor of Technology)", "value": "BTech" },
+  { "label": "B.E. (Bachelor of Engineering)", "value": "BE" },
+  { "label": "B.Sc. (Bachelor of Science)", "value": "BSc" },
+  { "label": "B.A. (Bachelor of Arts)", "value": "BA" },
+  { "label": "B.Com (Bachelor of Commerce)", "value": "BCom" },
+  { "label": "MBBS / BDS / BAMS (Medical)", "value": "Medical" },
+  { "label": "CA / CS / ICWA (Finance/Accounting)", "value": "Finance" },
+  { "label": "Other Graduate Degree", "value": "OtherGrad" },
+  { "label": "Diploma / ITI", "value": "Diploma/ITI" },
+  { "label": "High School / School Level", "value": "HighSchool" }
+],
+
+ JOB: [
+  { label: 'Software Engineer', value: 'Software Engineer' },
+  { label: 'Web Developer', value: 'Web Developer' },
+  { label: 'Mobile App Developer', value: 'Mobile App Developer' },
+  { label: 'Data Scientist', value: 'Data Scientist' },
+  { label: 'UI/UX Designer', value: 'UI/UX Designer' },
+  { label: 'Digital Marketing Specialist', value: 'Digital Marketing Specialist' },
+  { label: 'Financial Analyst', value: 'Financial Analyst' },
+  { label: 'Banking Professional', value: 'Banking Professional' },
+  { label: 'Chartered Accountant', value: 'Chartered Accountant' },
+  { label: 'Doctor', value: 'Doctor' },
+  { label: 'Nurse', value: 'Nurse' },
+  { label: 'Teacher', value: 'Teacher' },
+  { label: 'Professor', value: 'Professor' },
+  { label: 'Lawyer', value: 'Lawyer' },
+  { label: 'Civil Engineer', value: 'Civil Engineer' },
+  { label: 'Mechanical Engineer', value: 'Mechanical Engineer' },
+  { label: 'Electrical Engineer', value: 'Electrical Engineer' },
+  { label: 'Pilot', value: 'Pilot' },
+  { label: 'Air Hostess', value: 'Air Hostess' },
+  { label: 'Entrepreneur', value: 'Entrepreneur' },
+  { label: 'Business Owner', value: 'Business Owner' },
+  { label: 'Government Employee', value: 'Government Employee' },
+  { label: 'IT Professional', value: 'IT Professional' },
+  { label: 'Marketing Manager', value: 'Marketing Manager' },
+  { label: 'HR Manager', value: 'HR Manager' },
+  { label: 'Scientist', value: 'Scientist' },
+  { label: 'Research Analyst', value: 'Research Analyst' },
+  { label: 'Artist', value: 'Artist' },
+  { label: 'Actor/Actress', value: 'Actor/Actress' },
+  { label: 'Chef', value: 'Chef' },
+  { label: 'Pilot', value: 'Pilot' },
+  // You can continue adding more jobs here
+],
+
   // Standardised Salary Ranges (in Lakhs Per Annum - L.P.A)
   SALARY_LPA: [
     { label: "Upto ₹2 Lakhs", value: "0-2L" },
@@ -154,7 +314,7 @@ const TAMIL_DROPDOWN_DATA = {
   HOUSE_TYPE: [
     { label: "Own House", value: "Own" },
     { label: "Rented House", value: "Rented" },
-    { label: "Company Lease", value: "Lease" },
+    { label: "Lease", value: "Lease" },
   ],
   YES_NO: [
     { label: "Yes", value: "Yes" },
@@ -190,6 +350,7 @@ interface ProfileFormValues {
   dob: Date; // Use Date object for date picker
   birthTime: Date; // Use Date object for time picker
   homeTown: string;
+  jobTown: string;
   religion: string;
   subCaste: string;
   rasi: string;
@@ -197,6 +358,7 @@ interface ProfileFormValues {
   color: string;
   height: string;
   weight: string;
+  salry: string;
   food: string;
   motherTongue: string;
   chevvaiDhosam: string;
@@ -205,11 +367,10 @@ interface ProfileFormValues {
   photos: string[];
 
   // Step 2: Professional & Education
-  job: string;
   salary: string;
   jobPlace: string;
   education: string;
-
+  job: string;
   // Step 3: Family Details
   fatherName: string;
   fatherJob: string;
@@ -237,13 +398,14 @@ interface ProfileFormValues {
   partnerMaritalStatus: string;
   partnerPhysicalStatus: string;
   partnerMotherTongue: string;
+  partnerHometown: string;
+  partnerJobtown: string;
   partnerReligion: string;
   partnerSubCaste: string;
   partnerChevvaiDhosam: string;
   partnerEducation: string;
   partnerJob: string;
   partnerSalary: string;
-  partnerCity: string;
   partnerCountry: string;
   partnerEatingHabits: string;
   partnerDrinkingHabit: string;
@@ -258,14 +420,16 @@ const initialValues: ProfileFormValues = {
   name: "",
   dob: new Date(),
   birthTime: new Date(new Date().setHours(12, 0, 0, 0)), // Default to noon for time
-  homeTown: "Madurai", // Pre-filled as per user request
-  religion: "Hindu",
+  homeTown: "string", // Pre-filled as per user request
+  jobTown: "string", // Pre-filled as per user request
+  religion: "string",
   subCaste: "",
   rasi: "",
   star: "",
   color: "",
   height: "",
   weight: "",
+  salry: "string",
   food: "Vegetarian",
   motherTongue: "Tamil",
   chevvaiDhosam: "No",
@@ -274,11 +438,10 @@ const initialValues: ProfileFormValues = {
   photos: [],
 
   // Step 2
-  job: "",
   salary: "",
   jobPlace: "Madurai",
   education: "",
-
+  job: "",
   // Step 3
   fatherName: "",
   fatherJob: "",
@@ -306,13 +469,14 @@ const initialValues: ProfileFormValues = {
   partnerMaritalStatus: "Never Married",
   partnerPhysicalStatus: "None",
   partnerMotherTongue: "Tamil",
+  partnerHometown: "madurai",
+  partnerJobtown: "madurai",
   partnerReligion: "Hindu",
   partnerSubCaste: "Iyer",
   partnerChevvaiDhosam: "No",
   partnerEducation: "B.E. / B.Tech",
   partnerJob: "Software Engineer",
   partnerSalary: "5 Lakhs - 10 Lakhs",
-  partnerCity: "Madurai",
   partnerCountry: "India",
   partnerEatingHabits: "Vegetarian",
   partnerDrinkingHabit: "No",
@@ -328,7 +492,8 @@ const initialValues: ProfileFormValues = {
 
 const baseSchema = {
     name: Yup.string().required("Name is required"),
-    homeTown: Yup.string().required("Home Town is required (Madurai)"),
+    homeTown: Yup.string().required("Home Town is required"),
+    jobTown: Yup.string().required("Job Town is required"),
     religion: Yup.string().required("Religion is required"),
     subCaste: Yup.string().required("Sub-Caste is required"),
 };
@@ -346,7 +511,7 @@ const validationSchemas = [
   Yup.object().shape({
     education: Yup.string().required("Highest Education is required"),
     job: Yup.string().required("Job Title is required"),
-    salary: Yup.string().required("Annual Salary is required"),
+       salary: Yup.string().required("salary is required"),
     jobPlace: Yup.string().required("Work Place is required"),
   }),
   // Step 3: Family Details
@@ -472,6 +637,7 @@ export default function ProfileForm() {
     console.log("DOB:", values.dob.toLocaleDateString('en-IN'));
     console.log("Birth Time:", values.birthTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
     console.log("Home Town:", values.homeTown);
+    console.log("Job Town:", values.jobTown);
     console.log("Sub-Caste:", values.subCaste);
     console.log("Salary:", values.salary);
     console.log("---");
@@ -578,6 +744,7 @@ export default function ProfileForm() {
                       {stepId === 0 && (
                         <>
                           {/* Name */}
+                              <Text style={styles.label}>Full Name</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Full Name"
@@ -592,11 +759,15 @@ export default function ProfileForm() {
                             style={styles.input} 
                             onPress={() => showPicker("dob", values.dob as Date)}
                           >
+                              <Text style={styles.label}>Date of Birth</Text>
                             <Text style={values.dob ? styles.pickerText : styles.placeholderText}>
                               {values.dob ? `DOB: ${values.dob.toLocaleDateString('en-IN')}` : "Date of Birth (DOB) *"}
                             </Text>
                           </TouchableOpacity>
                           {/* Birth Time - Time Picker Trigger */}
+
+                              <Text style={styles.label}>Time of Birth</Text>
+
                           <TouchableOpacity 
                             style={styles.input} 
                             onPress={() => showPicker("birthTime", values.birthTime as Date)}
@@ -606,23 +777,14 @@ export default function ProfileForm() {
                             </Text>
                           </TouchableOpacity>
                           
-                          {/* Home Town */}
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Home Town (e.g., Madurai)"
-                            onChangeText={handleChange('homeTown')}
-                            onBlur={handleBlur('homeTown')}
-                            value={values.homeTown}
-                          />
-                          {touched.homeTown && errors.homeTown && <ErrorText>{errors.homeTown}</ErrorText>}
-
+                          <CustomDropdown label="homeTown *" name="homeTown" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOMETOWN} zIndex={11} />
                           <CustomDropdown label="Religion *" name="religion" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RELIGION} zIndex={10} />
                           <CustomDropdown label="Sub-Caste *" name="subCaste" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SUBCASTE} zIndex={9} />
                           <CustomDropdown label="Rasi (Moon Sign) *" name="rasi" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RASI} zIndex={8} />
                           <CustomDropdown label="Star / Nakshatra *" name="star" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.STAR} zIndex={7} />
                           <CustomDropdown label="Complexion *" name="color" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.COMPLEXION} zIndex={6} />
                           <CustomDropdown label="Height *" name="height" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HEIGHT} zIndex={5} />
-
+                              <Text style={styles.label}>Weight in (kg)</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Weight (in kg)"
@@ -636,7 +798,7 @@ export default function ProfileForm() {
                           <CustomDropdown label="Food Habits *" name="food" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.FOOD} zIndex={4} />
                           <CustomDropdown label="Mother Tongue *" name="motherTongue" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.MOTHER_TONGUE} zIndex={3} />
                           <CustomDropdown label="Chevvai Dhosam *" name="chevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={2} />
-
+                              <Text style={styles.label}>Weight in (pown)</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Gold (Pown)"
@@ -655,18 +817,18 @@ export default function ProfileForm() {
                       {/* ==================================== */}
                       {stepId === 1 && (
                         <>
-                          <CustomDropdown label="Highest Education *" name="education" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={4} />
+                          <CustomDropdown label="Highest Education *" name="education" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={5} />
+                          <CustomDropdown label="JobTitle *" name="job" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
+                           <Text style={styles.label}>Monthly Salary</Text>
                           <TextInput
                             style={styles.input}
-                            placeholder="Job Title / Occupation *"
-                            onChangeText={handleChange('job')}
-                            onBlur={handleBlur('job')}
-                            value={values.job}
+                            placeholder="Monthly Salary (in Rs)"
+                            keyboardType="numeric"
+                            onChangeText={handleChange('salary')}
+                            onBlur={handleBlur('salary')}
+                            value={values.salary}
                           />
-                          {touched.job && errors.job && <ErrorText>{errors.job}</ErrorText>}
-
-                          <CustomDropdown label="Annual Salary (LPA) *" name="salary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={3} />
-                          
+                          {touched.salary && errors.salary && <ErrorText>{errors.salary}</ErrorText>}
                           <TextInput
                             style={styles.input}
                             placeholder="Work Place / City (e.g., Madurai)"
@@ -675,6 +837,10 @@ export default function ProfileForm() {
                             value={values.jobPlace}
                           />
                           {touched.jobPlace && errors.jobPlace && <ErrorText>{errors.jobPlace}</ErrorText>}
+
+                          <CustomDropdown label="jobTown *" name="jobTown" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOMETOWN} zIndex={11} />
+
+
                         </>
                       )}
 
@@ -683,6 +849,7 @@ export default function ProfileForm() {
                       {/* ==================================== */}
                       {stepId === 2 && (
                         <>
+                              <Text style={styles.label}>Father Name</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Father's Name *"
@@ -691,14 +858,8 @@ export default function ProfileForm() {
                             value={values.fatherName}
                           />
                           {touched.fatherName && errors.fatherName && <ErrorText>{errors.fatherName}</ErrorText>}
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Father's Job / Occupation"
-                            onChangeText={handleChange('fatherJob')}
-                            onBlur={handleBlur('fatherJob')}
-                            value={values.fatherJob}
-                          />
-
+                          <CustomDropdown label="Father JobTitle *" name="fatherJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
+                              <Text style={styles.label}>Mother Name</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Mother's Name *"
@@ -707,14 +868,7 @@ export default function ProfileForm() {
                             value={values.motherName}
                           />
                           {touched.motherName && errors.motherName && <ErrorText>{errors.motherName}</ErrorText>}
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Mother's Job / Occupation"
-                            onChangeText={handleChange('motherJob')}
-                            onBlur={handleBlur('motherJob')}
-                            value={values.motherJob}
-                          />
-                          
+                          <CustomDropdown label="Mother JobTitle *" name="motherJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
                           <CustomDropdown label="House Type *" name="houseType" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOUSE_TYPE} zIndex={4} />
                           <CustomDropdown label="Family Loan? *" name="loan" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.YES_NO} zIndex={3} />
                           
@@ -818,16 +972,16 @@ export default function ProfileForm() {
                       {stepId === 4 && (
                         <>
                           <Text style={styles.preferenceTitle}>Desired Partner Attributes</Text>
-                          <CustomDropdown label="Age Range" name="partnerAge" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_AGE} zIndex={10} />
-                          <CustomDropdown label="Marital Status" name="partnerMaritalStatus" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_MARITAL_STATUS} zIndex={9} />
+                          <CustomDropdown label="Age Range" name="partnerAge" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_AGE} zIndex={11} />
+                          <CustomDropdown label="Marital Status" name="partnerMaritalStatus" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PARTNER_MARITAL_STATUS} zIndex={10} />
+                          <CustomDropdown label="homeTown" name="partnerHometown" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOMETOWN} zIndex={9} />
+                          <CustomDropdown label="jobTown" name="partnerJobtown" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOMETOWN} zIndex={9} />
                           <CustomDropdown label="Religion" name="partnerReligion" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.RELIGION} zIndex={8} />
                           <CustomDropdown label="Sub-Caste" name="partnerSubCaste" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SUBCASTE} zIndex={7} />
                           <CustomDropdown label="Education" name="partnerEducation" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={6} />
+                          <CustomDropdown label="job" name="partnerJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={6} />
                           <CustomDropdown label="Annual Salary (LPA)" name="partnerSalary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={5} />
                           <CustomDropdown label="Chevvai Dhosam" name="partnerChevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={4} />
-
-                          <TextInput style={styles.input} placeholder="Preferred Job / Occupation" onChangeText={handleChange('partnerJob')} value={values.partnerJob} />
-                          <TextInput style={styles.input} placeholder="Preferred City (e.g., Madurai)" onChangeText={handleChange('partnerCity')} value={values.partnerCity} />
                           <TextInput style={styles.input} placeholder="Contact Via (e.g., Parents, Self)" onChangeText={handleChange('partnerContact')} value={values.partnerContact} />
                         </>
                       )}
