@@ -21,6 +21,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import PhotoUpload from "@/components/photoUpload"; // Import componen
 import CustomHeader from '@/components/customHeader/CustomHeader';
 import SiblingInputSection from '@/components/SiblingInputSection';
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -408,7 +410,6 @@ interface ProfileFormValues {
   partnerMaritalStatus: string;
   partnerPhysicalStatus: string;
   partnerMotherTongue: string;
-  partnerHometown: string;
   partnerJobtown: string;
   partnerReligion: string;
   partnerSubCaste: string;
@@ -417,6 +418,9 @@ interface ProfileFormValues {
   partnerJob: string;
   partnerSalary: string;
   partnerCountry: string;
+      partnerRasi: string[],
+          partnerStar: string[],
+          partnerHometown: string[],
   partnerEatingHabits: string;
   partnerDrinkingHabit: string;
   partnerSmokingHabit: string;
@@ -439,7 +443,7 @@ const initialValues: ProfileFormValues = {
   color: "",
   height: "",
   weight: "",
-  salry: "string",
+  salry: "",
   food: "Vegetarian",
   motherTongue: "Tamil",
   chevvaiDhosam: "No",
@@ -484,14 +488,16 @@ const initialValues: ProfileFormValues = {
   partnerMaritalStatus: "Never Married",
   partnerPhysicalStatus: "None",
   partnerMotherTongue: "Tamil",
-  partnerHometown: "madurai",
+     partnerRasi: [],
+          partnerStar: [],
+          partnerHometown: [],
   partnerJobtown: "madurai",
   partnerReligion: "Hindu",
   partnerSubCaste: "Iyer",
   partnerChevvaiDhosam: "No",
   partnerEducation: "B.E. / B.Tech",
   partnerJob: "Software Engineer",
-  partnerSalary: "5 Lakhs - 10 Lakhs",
+  partnerSalary: "",
   partnerCountry: "India",
   partnerEatingHabits: "Vegetarian",
   partnerDrinkingHabit: "No",
@@ -608,6 +614,19 @@ goldPown: Yup.number()
   // Step 5: Partner Preference (No validation for simplicity, but can be added)
   Yup.object().shape({
     partnerAge: Yup.string().required("Preferred age is required"),
+
+        partnerSalary: Yup.number()
+  .typeError("Salary must be a number")
+  .positive("Salary must be positive")
+  .integer("Salary must be a whole number")
+  .min(5000, "Minimum salary allowed is ₹5,000")
+  .max(500000, "Maximum salary allowed is ₹5,00,000")
+  .required("Salary is required"),
+
+
+    partnerRasi: Yup.array().min(1, "Select at least 1 Rasi").max(3, "Max 3 allowed"),
+          partnerStar: Yup.array().min(1, "Select at least 1 Star").max(3, "Max 3 allowed"),
+          partnerHometown: Yup.array().min(1, "Select at least 1 Hometown").max(3, "Max 3 allowed"),
   }),
 ];
 
@@ -1058,7 +1077,44 @@ export default function ProfileForm() {
                           <CustomDropdown label="Sub-Caste" name="partnerSubCaste" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SUBCASTE} zIndex={7} />
                           <CustomDropdown label="Education" name="partnerEducation" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.EDUCATION} zIndex={6} />
                           <CustomDropdown label="job" name="partnerJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={6} />
-                          <CustomDropdown label="Annual Salary (LPA)" name="partnerSalary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={5} />
+                         
+
+         <Text style={styles.label}>Partner Salary</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Monthly Salary (in Rs)"
+                            keyboardType="numeric"
+                            onChangeText={handleChange('partnerSalary')}
+                            onBlur={handleBlur('partnerSalary')}
+                            value={values.partnerSalary}
+                          />
+                          {touched.partnerSalary && errors.partnerSalary && <ErrorText>{errors.partnerSalary}</ErrorText>}
+   <View>
+        <ScrollView>
+      <MultiSelectDropdown
+        label="Preferred Rasi"
+        name="partnerRasi"
+        formik={{ values, setFieldValue, touched, errors }}
+        items={TAMIL_DROPDOWN_DATA.RASI}
+        zIndex={12}
+      />
+      <MultiSelectDropdown
+        label="Preferred Star"
+        name="partnerStar"
+        formik={{ values, setFieldValue, touched, errors }}
+        items={TAMIL_DROPDOWN_DATA.STAR}
+        zIndex={11}
+      />
+      <MultiSelectDropdown
+        label="Preferred Hometown"
+        name="partnerHometown"
+        formik={{ values, setFieldValue, touched, errors }}
+        items={TAMIL_DROPDOWN_DATA.HOMETOWN}
+        zIndex={10}
+      />
+    </ScrollView>
+          </View>
+
                           <CustomDropdown label="Chevvai Dhosam" name="partnerChevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={4} />
                         </>
                       )}
