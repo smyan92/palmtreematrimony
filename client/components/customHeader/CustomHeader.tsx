@@ -20,20 +20,22 @@ export default function CustomHeader({ title, showBackButton = true }) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 80,
+    height: 90,
     backgroundColor: '#01A550',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
+    justifyContent: "center",   // center children vertically
+    alignItems: "center",       // center horizontally
   },
   backButton: {
+    position: "absolute",
+    right: 160,   
+    paddingTop: 20,
     fontSize: 24,
-    color: '#fff',
-    marginRight: 16,
+    color: "#fff",
   },
   title: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
+    fontSize: 22,
+    paddingTop: 20,
+    color: "#fff",
+    fontWeight: "bold",
   },
 });

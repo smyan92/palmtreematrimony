@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
+  Button,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -18,6 +19,9 @@ import * as Yup from "yup";
 import DropDownPicker, { ItemType } from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import PhotoUpload from "@/components/photoUpload"; // Import componen
+import CustomHeader from '@/components/customHeader/CustomHeader';
+import SiblingInputSection from '@/components/SiblingInputSection';
+
 // Enable LayoutAnimation for Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -380,10 +384,10 @@ interface ProfileFormValues {
   houseType: string;
   loan: string;
   loanAmount: string;
-  olderBrothers: string;
-  elderBrothers: string;
-  olderSisters: string;
-  elderSisters: string;
+  elderBrothers: string,
+    elderSisters: string,
+    youngerBrothers: string,
+    youngerSisters: string,
   propertyDetails: string;
   ownCar: string;
   marriedBrothers: number;
@@ -456,10 +460,10 @@ const initialValues: ProfileFormValues = {
   houseType: "Own House",
   loan: "No",
   loanAmount: "0",
-    olderBrothers: "",
-  elderBrothers: "",
-  olderSisters: "",
-  elderSisters: "",
+     elderBrothers: "0",
+    elderSisters: "0",
+    youngerBrothers: "0",
+    youngerSisters: "0",
   propertyDetails: "",
   ownCar: "No",
   marriedBrothers: 0,
@@ -507,28 +511,95 @@ const baseSchema = {
     jobTown: Yup.string().required("Job Town is required"),
     religion: Yup.string().required("Religion is required"),
     subCaste: Yup.string().required("Sub-Caste is required"),
+        rasi: Yup.string().required("Rasi is required"),
+    star: Yup.string().required("Star is required"),
+    height: Yup.string().required("Height is required"),
+    weight: Yup.string().required("Weight is required"),
+    goldPown: Yup.string().required("pown Weight is required"),
+    salary: Yup.string().required("salaryis required"),
+    fatherName: Yup.string().required("fatherName is required"),
+    motherName: Yup.string().required("fatherName is required"),
 };
 
 const validationSchemas = [
   // Step 1: Basic Details
   Yup.object().shape({
     ...baseSchema,
-    rasi: Yup.string().required("Rasi is required"),
-    star: Yup.string().required("Star is required"),
-    height: Yup.string().required("Height is required"),
-    weight: Yup.string().required("Weight is required"),
+     name: Yup.string()
+    .matches(/^[\p{L} ]+$/u, "Only letters are allowed in name") // ✅ only letters
+    .required("Name is required"), // ✅ required check
+
+weight: Yup.number()
+  .typeError("Weight must be a number")
+  .positive("Weight must be positive")
+  .integer("Weight must be a whole number")
+  .min(30, "Minimum allowed weight is 30 kg")
+  .max(200, "Maximum allowed weight is 200 kg")
+  .required("Weight is required"),
+goldPown: Yup.number()
+  .typeError("Gold must be a number")
+  .positive("Gold must be positive")
+  .integer("Gold must be a whole number")
+  .min(1, "Minimum allowed is 1 Pown")
+  .max(500, "Maximum allowed is 200 Pown")
+  .required("Gold in Pown is required"),
+
+
   }),
   // Step 2: Professional & Education
   Yup.object().shape({
+    ...baseSchema,
     education: Yup.string().required("Highest Education is required"),
     job: Yup.string().required("Job Title is required"),
-       salary: Yup.string().required("salary is required"),
     jobPlace: Yup.string().required("Work Place is required"),
+    salary: Yup.number()
+  .typeError("Salary must be a number")
+  .positive("Salary must be positive")
+  .integer("Salary must be a whole number")
+  .min(5000, "Minimum salary allowed is ₹5,000")
+  .max(500000, "Maximum salary allowed is ₹5,00,000")
+  .required("Salary is required"),
+
   }),
+  
   // Step 3: Family Details
   Yup.object().shape({
-    fatherName: Yup.string().required("Father's Name is required"),
-    motherName: Yup.string().required("Mother's Name is required"),
+  
+   fatherName: Yup.string()
+    .matches(/^[\p{L} ]+$/u, "Only letters are allowed in fatherName") // ✅ only letters
+    .required("Name is required"), // ✅ required check
+
+
+  motherName: Yup.string()
+    .matches(/^[\p{L} ]+$/u, "Only letters are allowed in motherName") // ✅ only letters
+    .required("Name is required"), // ✅ required check
+
+  elderBrothers: Yup.number()
+    .typeError('Elder brothers must be a number')
+    .min(0, 'Minimum 0')
+    .max(10, 'Maximum 10')
+    .required('Elder brothers is required'),
+
+  elderSisters: Yup.number()
+    .typeError('Elder sisters must be a number')
+    .min(0, 'Minimum 0')
+    .max(10, 'Maximum 10')
+    .required('Elder sisters is required'),
+
+  youngerBrothers: Yup.number()
+    .typeError('Younger brothers must be a number')
+    .min(0, 'Minimum 0')
+    .max(10, 'Maximum 10')
+    .notRequired(),
+
+  youngerSisters: Yup.number()
+    .typeError('Younger sisters must be a number')
+    .min(0, 'Minimum 0')
+    .max(10, 'Maximum 10')
+    .notRequired(),
+
+
+
     houseType: Yup.string().required("House Type is required"),
     marriedBrothers: Yup.number().min(0, "Cannot be negative"),
     unmarriedBrothers: Yup.number().min(0, "Cannot be negative"),
@@ -562,6 +633,8 @@ const steps = [
 ];const ErrorText: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Text style={styles.errorText}>{children}</Text>
 );
+
+
 
 interface DropdownProps {
   label: string;
@@ -668,9 +741,7 @@ export default function ProfileForm() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Madurai Matrimony Profile</Text>
-      </View>
+   <CustomHeader title="Complete Profile Details" showBackButton={true} />
 
       <Formik
         initialValues={initialValues}
@@ -821,6 +892,7 @@ export default function ProfileForm() {
                             onBlur={handleBlur('goldPown')}
                             value={values.goldPown}
                           />
+                          {touched.weight && errors.goldPown && <ErrorText>{errors.goldPown}</ErrorText>}
 
                           <CustomDropdown label="Physical Challenge *" name="physicalChallenge" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.PHYSICAL_CHALLENGE} zIndex={1} />
                         </>
@@ -874,41 +946,20 @@ export default function ProfileForm() {
                           />
                           {touched.motherName && errors.motherName && <ErrorText>{errors.motherName}</ErrorText>}
                           <CustomDropdown label="Mother JobTitle *" name="motherJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
-                              <TextInput
-                            style={styles.input}
-                            placeholder="older brother count"
-                            onChangeText={handleChange('olderBrothers')}
-                              keyboardType="numeric"
-                            onBlur={handleBlur('olderBrothers')}
-                            value={values.olderBrothers}
-                          />
 
-                                      <TextInput
-                            style={styles.input}
-                            placeholder="elder brother count"
-                            onChangeText={handleChange('elderBrothers')}
-                              keyboardType="numeric"
-                            onBlur={handleBlur('elderBrothers')}
-                            value={values.elderBrothers}
-                          />
 
-                                        <TextInput
-                            style={styles.input}
-                            placeholder="older sister count"
-                            onChangeText={handleChange('olderSisters')}
-                              keyboardType="numeric"
-                            onBlur={handleBlur('olderSisters')}
-                            value={values.olderSisters}
-                          />
+  <View>
+      <SiblingInputSection values={values} setFieldValue={setFieldValue} />
 
-                       <TextInput
-                            style={styles.input}
-                            placeholder="elder sister count"
-                            onChangeText={handleChange('elderSisters')}
-                              keyboardType="numeric"
-                            onBlur={handleBlur('elderSisters')}
-                            value={values.elderSisters}
-                          />
+      {/* Error messages */}
+
+                          {touched.elderBrothers && errors.elderBrothers && <ErrorText>{errors.elderBrothers}</ErrorText>}
+                          {touched.elderSisters && errors.elderSisters && <ErrorText>{errors.elderSisters}</ErrorText>}
+
+    </View>
+
+
+
 
                           <CustomDropdown label="House Type *" name="houseType" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOUSE_TYPE} zIndex={4} />
                           <CustomDropdown label="Family Loan? *" name="loan" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.YES_NO} zIndex={3} />
