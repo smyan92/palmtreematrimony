@@ -17,7 +17,7 @@ import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import DropDownPicker, { ItemType } from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import PhotoUpload from "@/components/photoUpload"; // Import componen
 // Enable LayoutAnimation for Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -384,6 +384,7 @@ interface ProfileFormValues {
   elderBrothers: string;
   olderSisters: string;
   elderSisters: string;
+  propertyDetails: string;
   ownCar: string;
   marriedBrothers: number;
   unmarriedBrothers: number;
@@ -459,6 +460,7 @@ const initialValues: ProfileFormValues = {
   elderBrothers: "",
   olderSisters: "",
   elderSisters: "",
+  propertyDetails: "",
   ownCar: "No",
   marriedBrothers: 0,
   unmarriedBrothers: 0,
@@ -537,7 +539,9 @@ const validationSchemas = [
     mobile: Yup.string()
       .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
       .required("Mobile number is required"),
-    email: Yup.string().email("Invalid email format").required("Email is required"),
+         photos: Yup.array()
+    .min(1, "Please upload at least 1 photo")
+    .max(3, "You can upload up to 3 photos"),
   }),
   // Step 5: Partner Preference (No validation for simplicity, but can be added)
   Yup.object().shape({
@@ -874,6 +878,7 @@ export default function ProfileForm() {
                             style={styles.input}
                             placeholder="older brother count"
                             onChangeText={handleChange('olderBrothers')}
+                              keyboardType="numeric"
                             onBlur={handleBlur('olderBrothers')}
                             value={values.olderBrothers}
                           />
@@ -882,6 +887,7 @@ export default function ProfileForm() {
                             style={styles.input}
                             placeholder="elder brother count"
                             onChangeText={handleChange('elderBrothers')}
+                              keyboardType="numeric"
                             onBlur={handleBlur('elderBrothers')}
                             value={values.elderBrothers}
                           />
@@ -890,6 +896,7 @@ export default function ProfileForm() {
                             style={styles.input}
                             placeholder="older sister count"
                             onChangeText={handleChange('olderSisters')}
+                              keyboardType="numeric"
                             onBlur={handleBlur('olderSisters')}
                             value={values.olderSisters}
                           />
@@ -898,6 +905,7 @@ export default function ProfileForm() {
                             style={styles.input}
                             placeholder="elder sister count"
                             onChangeText={handleChange('elderSisters')}
+                              keyboardType="numeric"
                             onBlur={handleBlur('elderSisters')}
                             value={values.elderSisters}
                           />
@@ -925,6 +933,18 @@ export default function ProfileForm() {
     }}
   />
 </View>
+
+                              <Text style={styles.label}>Property Details</Text>
+              <TextInput
+  style={[styles.input, { height: 100, textAlignVertical: 'top' }]} // adjust height as needed
+  placeholder="Property Details"
+  onChangeText={handleChange('propertyDetails')}
+  onBlur={handleBlur('propertyDetails')}
+  value={values.propertyDetails}
+  multiline={true}
+  numberOfLines={5} // optional: shows 5 lines by default
+/>
+
 
                           <CustomDropdown label="Smoking Habit" name="smoking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={2} />
                           <CustomDropdown label="Drinking Habit" name="drinking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={1} />
@@ -955,16 +975,11 @@ export default function ProfileForm() {
                             value={values.altNumber}
                           />
 
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Email Address *"
-                            keyboardType="email-address"
-                            onChangeText={handleChange('email')}
-                            onBlur={handleBlur('email')}
-                            value={values.email}
-                            autoCapitalize="none"
-                          />
-                          {touched.email && errors.email && <ErrorText>{errors.email}</ErrorText>}
+                             <PhotoUpload
+              photos={values.photos}
+              setPhotos={(photos) => setFieldValue("photos", photos)}
+            />
+            {errors.photos && <Text style={styles.errorText}>{errors.photos}</Text>}
                         </>
                       )}
 
@@ -1146,4 +1161,5 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     paddingBottom: 5,
   }
+  
 });
