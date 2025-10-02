@@ -382,7 +382,7 @@ interface ProfileFormValues {
   motherName: string;
   motherJob: string;
   houseType: string;
-  loan: string;
+   hasLoan: boolean,
   loanAmount: string;
   elderBrothers: string,
     elderSisters: string,
@@ -458,8 +458,8 @@ const initialValues: ProfileFormValues = {
   motherName: "",
   motherJob: "",
   houseType: "Own House",
-  loan: "No",
-  loanAmount: "0",
+  hasLoan: false,
+        loanAmount: '',
      elderBrothers: "0",
     elderSisters: "0",
     youngerBrothers: "0",
@@ -559,7 +559,6 @@ goldPown: Yup.number()
   .min(5000, "Minimum salary allowed is ₹5,000")
   .max(500000, "Maximum salary allowed is ₹5,00,000")
   .required("Salary is required"),
-
   }),
   
   // Step 3: Family Details
@@ -574,45 +573,37 @@ goldPown: Yup.number()
     .matches(/^[\p{L} ]+$/u, "Only letters are allowed in motherName") // ✅ only letters
     .required("Name is required"), // ✅ required check
 
-  elderBrothers: Yup.number()
-    .typeError('Elder brothers must be a number')
-    .min(0, 'Minimum 0')
-    .max(10, 'Maximum 10')
-    .required('Elder brothers is required'),
-
-  elderSisters: Yup.number()
-    .typeError('Elder sisters must be a number')
-    .min(0, 'Minimum 0')
-    .max(10, 'Maximum 10')
-    .required('Elder sisters is required'),
-
-  youngerBrothers: Yup.number()
-    .typeError('Younger brothers must be a number')
-    .min(0, 'Minimum 0')
-    .max(10, 'Maximum 10')
-    .notRequired(),
-
-  youngerSisters: Yup.number()
-    .typeError('Younger sisters must be a number')
-    .min(0, 'Minimum 0')
-    .max(10, 'Maximum 10')
-    .notRequired(),
-
-
-
     houseType: Yup.string().required("House Type is required"),
     marriedBrothers: Yup.number().min(0, "Cannot be negative"),
     unmarriedBrothers: Yup.number().min(0, "Cannot be negative"),
       ownCar: Yup.string().required('Please select if you own a car'),
+
+  loanAmount: Yup.string()
+    .required('Loan amount is required')                       // Required
+    .matches(/^\d+$/, 'Only numbers are allowed')              // Only digits
+    .test(
+      'min-max',
+      'Loan must be between 1,000 and 1,000,000',
+      (val) => {
+        if (!val) return false;
+        const num = parseInt(val, 10);
+        return num >= 1000 && num <= 1000000;
+      }
+    ),
   }),
   // Step 4: Contact Details
   Yup.object().shape({
     mobile: Yup.string()
       .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
       .required("Mobile number is required"),
+  altNumber: Yup.string()
+      .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+      .required("Mobile number is required"),
+
          photos: Yup.array()
     .min(1, "Please upload at least 1 photo")
     .max(3, "You can upload up to 3 photos"),
+    
   }),
   // Step 5: Partner Preference (No validation for simplicity, but can be added)
   Yup.object().shape({
@@ -948,32 +939,49 @@ export default function ProfileForm() {
                           <CustomDropdown label="Mother JobTitle *" name="motherJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
 
 
-  <View>
+    <View>
       <SiblingInputSection values={values} setFieldValue={setFieldValue} />
-
-      {/* Error messages */}
-
-                          {touched.elderBrothers && errors.elderBrothers && <ErrorText>{errors.elderBrothers}</ErrorText>}
-                          {touched.elderSisters && errors.elderSisters && <ErrorText>{errors.elderSisters}</ErrorText>}
-
     </View>
 
 
 
 
+
+
+
                           <CustomDropdown label="House Type *" name="houseType" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOUSE_TYPE} zIndex={4} />
-                          <CustomDropdown label="Family Loan? *" name="loan" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.YES_NO} zIndex={3} />
-                              <Text style={styles.label}>Monthly Loan Amount</Text>
-                     
-                     
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Loan Amount Monthly(Rs)"
-                            onChangeText={handleChange('loanAmount')}
-                            onBlur={handleBlur('loanAmount')}
-                              keyboardType="numeric"
-                            value={values.loanAmount}
-                          />
+                          
+                      <View>
+          {/* Loan checkbox / switch */}
+          <View style={styles.row}>
+            <Text style={styles.label}>Do you have a loan?</Text>
+            <Switch
+              value={values.hasLoan}
+              onValueChange={(val: boolean) => setFieldValue('hasLoan', val)}
+            />
+          </View>
+
+          {/* Conditional Loan Amount Input */}
+          {values.hasLoan && (
+            <View>
+              <TextInput
+                style={styles.input}
+                placeholder="Loan Amount Monthly (Rs)"
+                keyboardType="numeric"
+                onChangeText={handleChange('loanAmount')}
+                onBlur={handleBlur('loanAmount')}
+                value={values.loanAmount}
+              />
+                      {touched.loanAmount && errors.loanAmount && (
+  <Text style={styles.errorText}>{errors.loanAmount}</Text>
+)}
+
+         
+            </View>
+          )}
+        </View>       
+                          
+
 
 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
   <Text style={styles.label}>Own Car</Text>
@@ -1007,6 +1015,7 @@ export default function ProfileForm() {
                       {/* ==================================== */}
                       {stepId === 3 && (
                         <>
+                              <Text style={styles.label}>Mobile</Text>
                           <TextInput
                             style={styles.input}
                             placeholder="Mobile Number *"
@@ -1016,6 +1025,7 @@ export default function ProfileForm() {
                             value={values.mobile}
                           />
                           {touched.mobile && errors.mobile && <ErrorText>{errors.mobile}</ErrorText>}
+                              <Text style={styles.label}>Alternative Number</Text>
 
                           <TextInput
                             style={styles.input}
@@ -1025,7 +1035,7 @@ export default function ProfileForm() {
                             onBlur={handleBlur('altNumber')}
                             value={values.altNumber}
                           />
-
+  {touched.altNumber && errors.altNumber && <ErrorText>{errors.altNumber}</ErrorText>}
                              <PhotoUpload
               photos={values.photos}
               setPhotos={(photos) => setFieldValue("photos", photos)}
@@ -1050,7 +1060,6 @@ export default function ProfileForm() {
                           <CustomDropdown label="job" name="partnerJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={6} />
                           <CustomDropdown label="Annual Salary (LPA)" name="partnerSalary" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.SALARY_LPA} zIndex={5} />
                           <CustomDropdown label="Chevvai Dhosam" name="partnerChevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={4} />
-                          <TextInput style={styles.input} placeholder="Contact Via (e.g., Parents, Self)" onChangeText={handleChange('partnerContact')} value={values.partnerContact} />
                         </>
                       )}
 
@@ -1198,11 +1207,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: '600',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'},
   preferenceTitle: {
     fontSize: 16,
     fontWeight: 'bold',
