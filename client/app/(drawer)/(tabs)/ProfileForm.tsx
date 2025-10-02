@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Switch,
   Platform,
   LayoutAnimation,
   UIManager,
@@ -379,7 +380,11 @@ interface ProfileFormValues {
   houseType: string;
   loan: string;
   loanAmount: string;
-  vehicles: string;
+  olderBrothers: string;
+  elderBrothers: string;
+  olderSisters: string;
+  elderSisters: string;
+  ownCar: string;
   marriedBrothers: number;
   unmarriedBrothers: number;
   marriedSisters: number;
@@ -450,7 +455,11 @@ const initialValues: ProfileFormValues = {
   houseType: "Own House",
   loan: "No",
   loanAmount: "0",
-  vehicles: "",
+    olderBrothers: "",
+  elderBrothers: "",
+  olderSisters: "",
+  elderSisters: "",
+  ownCar: "No",
   marriedBrothers: 0,
   unmarriedBrothers: 0,
   marriedSisters: 0,
@@ -521,6 +530,7 @@ const validationSchemas = [
     houseType: Yup.string().required("House Type is required"),
     marriedBrothers: Yup.number().min(0, "Cannot be negative"),
     unmarriedBrothers: Yup.number().min(0, "Cannot be negative"),
+      ownCar: Yup.string().required('Please select if you own a car'),
   }),
   // Step 4: Contact Details
   Yup.object().shape({
@@ -829,15 +839,6 @@ export default function ProfileForm() {
                             value={values.salary}
                           />
                           {touched.salary && errors.salary && <ErrorText>{errors.salary}</ErrorText>}
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Work Place / City (e.g., Madurai)"
-                            onChangeText={handleChange('jobPlace')}
-                            onBlur={handleBlur('jobPlace')}
-                            value={values.jobPlace}
-                          />
-                          {touched.jobPlace && errors.jobPlace && <ErrorText>{errors.jobPlace}</ErrorText>}
-
                           <CustomDropdown label="jobTown *" name="jobTown" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOMETOWN} zIndex={11} />
 
 
@@ -869,60 +870,61 @@ export default function ProfileForm() {
                           />
                           {touched.motherName && errors.motherName && <ErrorText>{errors.motherName}</ErrorText>}
                           <CustomDropdown label="Mother JobTitle *" name="motherJob" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.JOB} zIndex={4} />
+                              <TextInput
+                            style={styles.input}
+                            placeholder="older brother count"
+                            onChangeText={handleChange('olderBrothers')}
+                            onBlur={handleBlur('olderBrothers')}
+                            value={values.olderBrothers}
+                          />
+
+                                      <TextInput
+                            style={styles.input}
+                            placeholder="elder brother count"
+                            onChangeText={handleChange('elderBrothers')}
+                            onBlur={handleBlur('elderBrothers')}
+                            value={values.elderBrothers}
+                          />
+
+                                        <TextInput
+                            style={styles.input}
+                            placeholder="older sister count"
+                            onChangeText={handleChange('olderSisters')}
+                            onBlur={handleBlur('olderSisters')}
+                            value={values.olderSisters}
+                          />
+
+                       <TextInput
+                            style={styles.input}
+                            placeholder="elder sister count"
+                            onChangeText={handleChange('elderSisters')}
+                            onBlur={handleBlur('elderSisters')}
+                            value={values.elderSisters}
+                          />
+
                           <CustomDropdown label="House Type *" name="houseType" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HOUSE_TYPE} zIndex={4} />
                           <CustomDropdown label="Family Loan? *" name="loan" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.YES_NO} zIndex={3} />
-                          
+                              <Text style={styles.label}>Monthly Loan Amount</Text>
+                     
+                     
                           <TextInput
                             style={styles.input}
-                            placeholder="Loan Amount (if Yes, e.g., 10L)"
+                            placeholder="Loan Amount Monthly(Rs)"
                             onChangeText={handleChange('loanAmount')}
                             onBlur={handleBlur('loanAmount')}
+                              keyboardType="numeric"
                             value={values.loanAmount}
                           />
 
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Vehicles Owned"
-                            onChangeText={handleChange('vehicles')}
-                            onBlur={handleBlur('vehicles')}
-                            value={values.vehicles}
-                          />
-
-                          <Text style={styles.siblingLabel}>Siblings</Text>
-                          <View style={styles.row}>
-                            <TextInput
-                                style={[styles.input, { flex: 1, marginRight: 10 }]}
-                                placeholder="M. Bro"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setFieldValue('marriedBrothers', Number(text))}
-                                onBlur={handleBlur('marriedBrothers')}
-                                value={values.marriedBrothers.toString()}
-                            />
-                            <TextInput
-                                style={[styles.input, { flex: 1, marginRight: 10 }]}
-                                placeholder="U. Bro"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setFieldValue('unmarriedBrothers', Number(text))}
-                                onBlur={handleBlur('unmarriedBrothers')}
-                                value={values.unmarriedBrothers.toString()}
-                            />
-                             <TextInput
-                                style={[styles.input, { flex: 1, marginRight: 10 }]}
-                                placeholder="M. Sis"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setFieldValue('marriedSisters', Number(text))}
-                                onBlur={handleBlur('marriedSisters')}
-                                value={values.marriedSisters.toString()}
-                            />
-                             <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                placeholder="U. Sis"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setFieldValue('unmarriedSisters', Number(text))}
-                                onBlur={handleBlur('unmarriedSisters')}
-                                value={values.unmarriedSisters.toString()}
-                            />
-                          </View>
+<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+  <Text style={styles.label}>Own Car</Text>
+  <Switch
+    value={values.ownCar === 'Yes'}
+    onValueChange={(val: boolean) => {
+      setFieldValue('ownCar', val ? 'Yes' : 'No');
+    }}
+  />
+</View>
 
                           <CustomDropdown label="Smoking Habit" name="smoking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={2} />
                           <CustomDropdown label="Drinking Habit" name="drinking" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.HABITS} zIndex={1} />
