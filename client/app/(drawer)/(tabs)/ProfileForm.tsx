@@ -21,7 +21,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import PhotoUpload from "@/components/photoUpload"; // Import componen
 import CustomHeader from '@/components/customHeader/CustomHeader';
 import SiblingInputSection from '@/components/SiblingInputSection';
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import ChipMultiSelect from "@/components/ChipMultiSelect";
 
 
 // Enable LayoutAnimation for Android
@@ -1090,29 +1090,38 @@ export default function ProfileForm() {
                           />
                           {touched.partnerSalary && errors.partnerSalary && <ErrorText>{errors.partnerSalary}</ErrorText>}
    <View>
-        <ScrollView>
-      <MultiSelectDropdown
-        label="Preferred Rasi"
-        name="partnerRasi"
-        formik={{ values, setFieldValue, touched, errors }}
-        items={TAMIL_DROPDOWN_DATA.RASI}
-        zIndex={12}
-      />
-      <MultiSelectDropdown
-        label="Preferred Star"
-        name="partnerStar"
-        formik={{ values, setFieldValue, touched, errors }}
-        items={TAMIL_DROPDOWN_DATA.STAR}
-        zIndex={11}
-      />
-      <MultiSelectDropdown
-        label="Preferred Hometown"
-        name="partnerHometown"
-        formik={{ values, setFieldValue, touched, errors }}
-        items={TAMIL_DROPDOWN_DATA.HOMETOWN}
-        zIndex={10}
-      />
-    </ScrollView>
+<ScrollView keyboardShouldPersistTaps="handled">
+  <ChipMultiSelect
+    label="Preferred Rasi"
+    name="partnerRasi"
+    formik={{ values, setFieldValue, touched, errors }}
+    items={TAMIL_DROPDOWN_DATA.RASI}
+    min={1}
+    max={5}
+  />
+
+  <ChipMultiSelect
+    label="Preferred Star"
+    name="partnerStar"
+    formik={{ values, setFieldValue, touched, errors }}
+    items={TAMIL_DROPDOWN_DATA.STAR}
+    min={1}
+    max={5}
+  />
+
+  <ChipMultiSelect
+    label="Preferred Hometown"
+    name="partnerHometown"
+    formik={{ values, setFieldValue, touched, errors }}
+    items={TAMIL_DROPDOWN_DATA.HOMETOWN}
+    min={1}
+    max={5}
+  />
+</ScrollView>
+
+
+
+
           </View>
 
                           <CustomDropdown label="Chevvai Dhosam" name="partnerChevvaiDhosam" formik={{ values, setFieldValue, touched, errors }} items={TAMIL_DROPDOWN_DATA.CHEVVAI_DHOSAM} zIndex={4} />
