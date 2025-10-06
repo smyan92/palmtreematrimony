@@ -6,37 +6,31 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
-  Switch
+  Alert,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
-import DatePickerInput from "@/components/Forms/DatePicker";
-import Dropdown from "@/components/Forms/Dropdown";
-import PhotoUpload  from "@/components/Forms/PhotoUpload";
 
+// Initial form values
 const initialValues = {
-mobile: "",
-alternativeNumber: "",
-photos: [],
+  mobile: "",
+  alternativeNumber: "",
 };
 
+// Yup validation schema
 const validationSchema = Yup.object({
-   mobile: Yup.string()
-  .matches(/^[6-9]\d{9}$/, "Enter valid 10-digit number")
-  .required("Mobile number is required"),
-alternativeNumber: Yup.string()
-  .matches(/^[6-9]\d{9}$/, "Enter valid 10-digit number")
-  .notOneOf([Yup.ref("mobile")], "Alternative number must be different"),
-photos: Yup.array()
-  .min(1, "At least 1 photo required")
-  .max(3, "Max 3 photos allowed"),
-
+  mobile: Yup.string()
+    .matches(/^[6-9]\d{9}$/, "Enter valid 10-digit number")
+    .required("Mobile number is required"),
+  alternativeNumber: Yup.string()
+    .matches(/^[6-9]\d{9}$/, "Enter valid 10-digit number")
+    .notOneOf([Yup.ref("mobile")], "Alternative number must be different"),
 });
-
 
 export default function App() {
   const handleRegistration = (values: typeof initialValues) => {
+    Alert.alert("Success", "Form submitted successfully!");
     console.log("Form Submitted:", values);
   };
 
@@ -47,6 +41,8 @@ export default function App() {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleRegistration}
+          validateOnChange
+          validateOnBlur
         >
           {({
             handleChange,
@@ -56,50 +52,45 @@ export default function App() {
             errors,
             touched,
             isValid,
+            dirty,
             setFieldValue,
           }) => (
             <View>
-
+              {/* Mobile Number */}
               <FormTextInput
-  label="Mobile Number"
-  placeholder="Enter mobile number"
-  keyboardType="phone-pad"
-  value={values.mobile}
-  onChangeText={handleChange("mobile")}
-  onBlur={handleBlur("mobile")}
-  error={errors.mobile}
-  touched={touched.mobile}
-/>
+                label="Mobile Number"
+                placeholder="Enter mobile number"
+                keyboardType="phone-pad"
+                value={values.mobile}
+                onChangeText={handleChange("mobile")}
+                onBlur={handleBlur("mobile")}
+                error={errors.mobile}
+                touched={touched.mobile}
+              />
 
-<FormTextInput
-  label="Alternative Number"
-  placeholder="Enter alternative number"
-  keyboardType="phone-pad"
-  value={values.alternativeNumber}
-  onChangeText={handleChange("alternativeNumber")}
-  onBlur={handleBlur("alternativeNumber")}
-  error={errors.alternativeNumber}
-  touched={touched.alternativeNumber}
-/>
+              {/* Alternative Number */}
+              <FormTextInput
+                label="Alternative Number"
+                placeholder="Enter alternative number"
+                keyboardType="phone-pad"
+                value={values.alternativeNumber}
+                onChangeText={handleChange("alternativeNumber")}
+                onBlur={handleBlur("alternativeNumber")}
+                error={errors.alternativeNumber}
+                touched={touched.alternativeNumber}
+              />
 
-<PhotoUpload
-  label="Upload Photos"
-  photos={values.photos}
-  onChange={(newPhotos) => setFieldValue("photos", newPhotos)}
-  error={errors.photos as string}   // use 'errors.photos', NOT 'error'
-  touched={touched.photos}          // use 'touched.photos'
-/>
+           
 
+              {/* Save Button */}
+      <TouchableOpacity
+  style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
+  onPress={() => handleSubmit()} // ✅ wrap in arrow function
+  disabled={!isValid || !dirty}
+>
+  <Text style={styles.buttonText}>Save</Text>
+</TouchableOpacity>
 
-
-              <TouchableOpacity
-                style={[styles.button, !isValid && styles.buttonDisabled]}
-                onPress={() => handleSubmit()}
-                disabled={!isValid}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
             </View>
           )}
         </Formik>
@@ -109,15 +100,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f5f7fa",
-  },
-  container: {
-    flexGrow: 1,
-    padding: 16,
-    justifyContent: "center",
-  },
+  safeArea: { flex: 1, backgroundColor: "#f5f7fa" },
+  container: { flexGrow: 1, padding: 16, justifyContent: "center" },
   button: {
     backgroundColor: "#007bff",
     paddingVertical: 14,
@@ -125,23 +109,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
   },
-  buttonDisabled: {
-    backgroundColor: "#a0c8f5",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
+  buttonDisabled: { backgroundColor: "#a0c8f5" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  label: { fontSize: 16, fontWeight: "500", marginBottom: 5 },
 });

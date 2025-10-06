@@ -37,9 +37,14 @@ const initialValues = {
 };
 
 const validationSchema = Yup.object({
-  partnerName: Yup.string().required("Name is required"),
-  partnerAgeFrom: Yup.number().required("From age is required"),
-  partnerAgeTo: Yup.number().required("To age is required"),
+  partnerName: Yup.string().required("Partner name is required"),
+  partnerAgeFrom: Yup.number()
+    .typeError("Age From must be a number")
+    .required("Age From is required"),
+  partnerAgeTo: Yup.number()
+    .typeError("Age To must be a number")
+    .required("Age To is required")
+    .min(Yup.ref("partnerAgeFrom"), "Age To must be greater than Age From"),
   partnerMaritalStatus: Yup.string().required("Select marital status"),
   partnerHometown: Yup.string().required("Select hometown"),
   partnerJobTown: Yup.array().min(1, "Select at least 1 job town"),
@@ -119,6 +124,7 @@ const skinColorOptions = [
 export default function PartnerPreferenceForm() {
   const handleRegistration = (values: typeof initialValues) => {
     console.log("Form Submitted:", values);
+    alert("Form submitted successfully!");
   };
 
   return (
@@ -137,10 +143,10 @@ export default function PartnerPreferenceForm() {
             errors,
             touched,
             isValid,
+            dirty,
             setFieldValue,
           }) => (
             <View>
-              {/* Name */}
               <FormTextInput
                 label="Partner Name"
                 value={values.partnerName}
@@ -150,7 +156,6 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerName}
               />
 
-              {/* Age From / To */}
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <FormTextInput
                   label="Age From"
@@ -172,11 +177,10 @@ export default function PartnerPreferenceForm() {
                 />
               </View>
 
-              {/* Dropdowns */}
               <Dropdown
                 label="Marital Status"
                 value={values.partnerMaritalStatus}
-                onValueChange={(val: string) => setFieldValue("partnerMaritalStatus", val)}
+                onValueChange={(val) => setFieldValue("partnerMaritalStatus", val)}
                 options={maritalStatusOptions}
                 error={errors.partnerMaritalStatus as string}
                 touched={!!touched.partnerMaritalStatus}
@@ -185,27 +189,25 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Hometown"
                 value={values.partnerHometown}
-                onValueChange={(val: string) => setFieldValue("partnerHometown", val)}
+                onValueChange={(val) => setFieldValue("partnerHometown", val)}
                 options={hometownOptions}
                 error={errors.partnerHometown as string}
                 touched={!!touched.partnerHometown}
               />
 
-              {/* MultiDropdowns */}
-<MultiDropdown
-  label="Job Town"
-  selectedValues={values.partnerJobTown}           // <- changed
-  onValuesChange={(val) => setFieldValue("partnerJobTown", val)} // <- changed
-  options={hometownOptions}
-  error={errors.partnerJobTown as string[]}
-  touched={!!touched.partnerJobTown}
-/>
-
+              <MultiDropdown
+                label="Job Town"
+                selectedValues={values.partnerJobTown}
+                onValuesChange={(val) => setFieldValue("partnerJobTown", val)}
+                options={hometownOptions}
+                error={errors.partnerJobTown as string[]}
+                touched={!!touched.partnerJobTown}
+              />
 
               <Dropdown
                 label="Religion"
                 value={values.partnerReligion}
-                onValueChange={(val: string) => setFieldValue("partnerReligion", val)}
+                onValueChange={(val) => setFieldValue("partnerReligion", val)}
                 options={religionOptions}
                 error={errors.partnerReligion as string}
                 touched={!!touched.partnerReligion}
@@ -214,7 +216,7 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Subcaste"
                 value={values.partnerSubcaste}
-                onValueChange={(val: string) => setFieldValue("partnerSubcaste", val)}
+                onValueChange={(val) => setFieldValue("partnerSubcaste", val)}
                 options={subcasteOptions}
                 error={errors.partnerSubcaste as string}
                 touched={!!touched.partnerSubcaste}
@@ -223,7 +225,7 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Education"
                 value={values.partnerEducation}
-                onValueChange={(val: string) => setFieldValue("partnerEducation", val)}
+                onValueChange={(val) => setFieldValue("partnerEducation", val)}
                 options={educationOptions}
                 error={errors.partnerEducation as string}
                 touched={!!touched.partnerEducation}
@@ -232,7 +234,7 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Job"
                 value={values.partnerJob}
-                onValueChange={(val: string) => setFieldValue("partnerJob", val)}
+                onValueChange={(val) => setFieldValue("partnerJob", val)}
                 options={jobOptions}
                 error={errors.partnerJob as string}
                 touched={!!touched.partnerJob}
@@ -250,27 +252,25 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Star"
                 value={values.partnerStar}
-                onValueChange={(val: string) => setFieldValue("partnerStar", val)}
+                onValueChange={(val) => setFieldValue("partnerStar", val)}
                 options={starOptions}
                 error={errors.partnerStar as string}
                 touched={!!touched.partnerStar}
               />
 
-<MultiDropdown
-  label="Hometown Multi"
-  selectedValues={values.partnerHometownMulti || []} // ✅ fallback to empty array
-  onValuesChange={(val: string[]) => setFieldValue("partnerHometownMulti", val)}
-  options={hometownOptions}
-  error={errors.partnerHometownMulti as string[] | undefined}
-  touched={!!touched.partnerHometownMulti}
-/>
-
-
+              <MultiDropdown
+                label="Hometown Multi"
+                selectedValues={values.partnerHometownMulti || []}
+                onValuesChange={(val) => setFieldValue("partnerHometownMulti", val)}
+                options={hometownOptions}
+                error={errors.partnerHometownMulti as string[] | undefined}
+                touched={!!touched.partnerHometownMulti}
+              />
 
               <Dropdown
                 label="Chevai/Dhosam"
                 value={values.partnerChevai}
-                onValueChange={(val: string) => setFieldValue("partnerChevai", val)}
+                onValueChange={(val) => setFieldValue("partnerChevai", val)}
                 options={chevaiOptions}
                 error={errors.partnerChevai as string}
                 touched={!!touched.partnerChevai}
@@ -279,7 +279,7 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Physical Challenge"
                 value={values.partnerPhysicalChallenge}
-                onValueChange={(val: string) => setFieldValue("partnerPhysicalChallenge", val)}
+                onValueChange={(val) => setFieldValue("partnerPhysicalChallenge", val)}
                 options={physicalChallengeOptions}
                 error={errors.partnerPhysicalChallenge as string}
                 touched={!!touched.partnerPhysicalChallenge}
@@ -288,7 +288,7 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="House Type"
                 value={values.partnerHouseType}
-                onValueChange={(val: string) => setFieldValue("partnerHouseType", val)}
+                onValueChange={(val) => setFieldValue("partnerHouseType", val)}
                 options={houseTypeOptions}
                 error={errors.partnerHouseType as string}
                 touched={!!touched.partnerHouseType}
@@ -306,36 +306,66 @@ export default function PartnerPreferenceForm() {
               <Dropdown
                 label="Skin Color"
                 value={values.partnerSkinColor}
-                onValueChange={(val: string) => setFieldValue("partnerSkinColor", val)}
+                onValueChange={(val) => setFieldValue("partnerSkinColor", val)}
                 options={skinColorOptions}
                 error={errors.partnerSkinColor as string}
                 touched={!!touched.partnerSkinColor}
               />
 
-    <MultiDropdown
-  label="Star Multi"
-  selectedValues={values.partnerStarMulti || []} // fallback to empty array
-  onValuesChange={(val: string[]) => setFieldValue("partnerStarMulti", val)}
-  options={starOptions}
-  error={errors.partnerStarMulti as string[] | string | undefined}
-  touched={!!touched.partnerStarMulti}
-/>
+              <MultiDropdown
+                label="Star Multi"
+                selectedValues={values.partnerStarMulti || []}
+                onValuesChange={(val) => setFieldValue("partnerStarMulti", val)}
+                options={starOptions}
+                error={errors.partnerStarMulti as string[] | undefined}
+                touched={!!touched.partnerStarMulti}
+              />
 
-<MultiDropdown
-  label="Rasi Multi"
-  selectedValues={values.partnerRasiMulti || []} // fallback to empty array
-  onValuesChange={(val: string[]) => setFieldValue("partnerRasiMulti", val)}
-  options={starOptions}
-  error={errors.partnerRasiMulti as string[] | string | undefined}
-  touched={!!touched.partnerRasiMulti}
-/>
+              <MultiDropdown
+                label="Rasi Multi"
+                selectedValues={values.partnerRasiMulti || []}
+                onValuesChange={(val) => setFieldValue("partnerRasiMulti", val)}
+                options={starOptions}
+                error={errors.partnerRasiMulti as string[] | undefined}
+                touched={!!touched.partnerRasiMulti}
+              />
 
-
+              {/* Fill Test Data */}
               <TouchableOpacity
-                style={[styles.button, !isValid && styles.buttonDisabled]}
+                style={styles.fillButton}
+                onPress={() => {
+                  setFieldValue("partnerName", "John Doe");
+                  setFieldValue("partnerAgeFrom", "25");
+                  setFieldValue("partnerAgeTo", "30");
+                  setFieldValue("partnerMaritalStatus", "single");
+                  setFieldValue("partnerHometown", "madurai");
+                  setFieldValue("partnerJobTown", ["chennai"]);
+                  setFieldValue("partnerReligion", "hindu");
+                  setFieldValue("partnerSubcaste", "iyer");
+                  setFieldValue("partnerEducation", "bachelors");
+                  setFieldValue("partnerJob", "engineer");
+                  setFieldValue("partnerSalary", "50000");
+                  setFieldValue("partnerStar", "ashwini");
+                  setFieldValue("partnerHometownMulti", ["madurai"]);
+                  setFieldValue("partnerChevai", "no");
+                  setFieldValue("partnerPhysicalChallenge", "no");
+                  setFieldValue("partnerHouseType", "apartment");
+                  setFieldValue("partnerGold", "50");
+                  setFieldValue("partnerSkinColor", "fair");
+                  setFieldValue("partnerStarMulti", ["ashwini"]);
+                  setFieldValue("partnerRasiMulti", ["ashwini"]);
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600", textAlign: "center" }}>
+                  Fill Test Data
+                </Text>
+              </TouchableOpacity>
+
+              {/* Save Button */}
+              <TouchableOpacity
+                style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
                 onPress={() => handleSubmit()}
-                disabled={!isValid}
-                activeOpacity={0.8}
+                disabled={!isValid || !dirty}
               >
                 <Text style={styles.buttonText}>Save</Text>
               </TouchableOpacity>
@@ -362,5 +392,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+  },
+  fillButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 20,
+    alignItems: "center",
   },
 });

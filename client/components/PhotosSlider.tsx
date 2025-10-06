@@ -7,30 +7,19 @@ import {
   Dimensions,
   TouchableOpacity,
   Text,
-  Alert,
-  ImageSourcePropType,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
 const SPACING = width * 0.05;
 
-type ImageDataType = string | null | ImageSourcePropType; 
+type ImageDataType = string;
+const MAX_PHOTOS = 3;
 
-interface ImageSliderProps {
-  images: ImageDataType[];
-  onAddPhoto: () => void;
-  maxPhotos?: number;
-  maxPhotoSizeMB?: number;
-}
-
-const ImageSlider: React.FC<ImageSliderProps> = ({
-  images,
-  onAddPhoto,
-  maxPhotos = 3,
-  maxPhotoSizeMB = 2,
-}) => {
+const ImageSlider: React.FC = () => {
+  const [images, setImages] = useState<ImageDataType[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -48,62 +37,74 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
     });
   };
 
+  const pickImage = async (replaceIndex?: number) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setImages(prev => {
+        const newImages = [...prev];
+        if (replaceIndex !== undefined) {
+          newImages[replaceIndex] = uri; // replace
+        } else if (prev.length < MAX_PHOTOS) {
+          newImages.push(uri); // add
+        } else {
+          newImages[0] = uri; // replace first if max reached
+        }
+        return newImages;
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const renderUploadPlaceholder = () => (
     <TouchableOpacity
       style={[styles.imageCard, styles.placeholder]}
-      onPress={onAddPhoto}
+      onPress={() => pickImage()}
+      activeOpacity={0.8}
     >
-      {/* Icon color tweaked to match image's green */}
       <Ionicons name="cloud-upload-outline" size={36} color="#45A049" />
-      
-      {/* Upload Photo text is black/default */}
-      <Text style={[styles.uploadText, { color: '#000', marginTop: 10 }]}>
-        Upload Photo
+      <Text style={styles.uploadText}>Upload Photo</Text>
+      <Text style={[styles.limitText, { fontWeight: 'bold' }]}>
+        (Max {MAX_PHOTOS} photos)
       </Text>
-      
-      {/* Max photos text (orange/coral) */}
-      <Text style={[styles.limitText, { color: '#FF7F50', fontWeight: 'bold' }]}>
-        (Max {maxPhotos} photos)
-      </Text>
-      
-      {/* Max size text (fainter orange/coral) */}
-      <Text style={[styles.limitText, { color: '#FF7F50' }]}>
-        each photo max {maxPhotoSizeMB} MB
-      </Text>
+      <Text style={styles.limitText}>each photo max 2MB</Text>
     </TouchableOpacity>
   );
 
-  const renderImageItem = (item: ImageDataType) => {
-    if (!item) return null; 
+  const renderImageItem = (item: ImageDataType, imageIndex: number) => (
+    <View style={styles.imageCardContainer}>
+      <Image source={{ uri: item }} style={styles.imageCard} />
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => removeImage(imageIndex)}
+      >
+        <Ionicons name="close-circle" size={24} color="#FF3B30" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.replaceButton}
+        onPress={() => pickImage(imageIndex)}
+      >
+        <Ionicons name="pencil" size={20} color="#007bff" />
+      </TouchableOpacity>
+    </View>
+  );
 
-    let source: ImageSourcePropType;
-
-    if (typeof item === 'string') {
-        // Remote URL support
-        source = { uri: item };
-    } else {
-        // Local asset require() support
-        source = item as ImageSourcePropType; 
-    }
-
-    return (
-      <View style={styles.imageCardContainer}>
-      <View>
-        <Image
-          source={source} 
-          style={styles.imageCard}
-          resizeMode="cover"
-        />
-      </View>
-      </View>
-    );
-  };
+  const flatListData: (string | 'placeholder')[] =
+    images.length < MAX_PHOTOS ? ['placeholder', ...images] : [...images];
 
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={images}
+        data={flatListData}
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, index) => index.toString()}
@@ -113,17 +114,16 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
         snapToInterval={CARD_WIDTH + SPACING}
         snapToAlignment="start"
         contentContainerStyle={styles.flatListContent}
-        renderItem={({ item, index }) => {
-          if (index === 0 && !item) {
-            return renderUploadPlaceholder();
-          }
-          return renderImageItem(item);
-        }}
+        renderItem={({ item, index }) =>
+          item === 'placeholder'
+            ? renderUploadPlaceholder()
+            : renderImageItem(item as string, index - (images.length < MAX_PHOTOS ? 1 : 0))
+        }
       />
 
-      {/* Dots Indicator */}
+      {/* Dots */}
       <View style={styles.dotsContainer}>
-        {images.map((_, index) => (
+        {flatListData.map((_, index) => (
           <TouchableOpacity key={index} onPress={() => goToSlide(index)}>
             <View
               style={[styles.dot, currentIndex === index && styles.activeDot]}
@@ -138,60 +138,75 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
 export default ImageSlider;
 
 const styles = StyleSheet.create({
-    container: {
-        height: 220,
-        marginVertical: 8,
-    },
-    flatListContent: {
-        paddingHorizontal: SPACING / 2,
-    },
-    imageCardContainer: {
-        marginHorizontal: SPACING / 2,
-    },
-    imageCard: {
-     width: 150,
-        height: 200,
-        borderRadius: 16,
-    },
-    placeholder: {
-      width: 150,
-        height: 200,
-        backgroundColor: '#ffffff',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#FF7F50', // Orange border color
-        borderStyle: 'dashed', // Dashed border style
-        padding: 20, // Add padding to keep content away from the border
-    },
-    uploadText: {
-        // Color is overridden in renderUploadPlaceholder to be black/default
-        marginTop: 8,
-        fontWeight: '600',
-        fontSize: 16,
-    },
-    limitText: {
-        // Color is controlled in renderUploadPlaceholder
-        fontSize: 12,
-        marginTop: 4,
-    },
-    dotsContainer: {
-        position: 'absolute',
-        bottom: -15,
-        flexDirection: 'row',
-        alignSelf: 'center',
-        paddingVertical: 10,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#ccc',
-        marginHorizontal: 3,
-    },
-    activeDot: {
-        backgroundColor: '#4CAF50',
-        width: 12,
-        borderRadius: 6,
-    },
+  container: {
+    height: 220,
+    marginVertical: 8,
+  },
+  flatListContent: {
+    paddingHorizontal: SPACING / 2,
+  },
+  imageCardContainer: {
+    marginHorizontal: SPACING / 2,
+    position: 'relative',
+  },
+  imageCard: {
+    width: 150,
+    height: 200,
+    borderRadius: 16,
+  },
+  placeholder: {
+    width: 150,
+    height: 200,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FF7F50',
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    padding: 10,
+  },
+  uploadText: {
+    marginTop: 8,
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#000',
+  },
+  limitText: {
+    fontSize: 12,
+    marginTop: 4,
+    color: '#FF7F50',
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: -15,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    paddingVertical: 10,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ccc',
+    marginHorizontal: 3,
+  },
+  activeDot: {
+    backgroundColor: '#4CAF50',
+    width: 12,
+    borderRadius: 6,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: -8,
+  },
+  replaceButton: {
+    position: 'absolute',
+    bottom: 25,
+    right: 10,
+    backgroundColor: '#fff',
+    padding: 4,
+    borderRadius: 12,
+  },
 });

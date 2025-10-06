@@ -6,41 +6,40 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
-  Switch
+  Switch,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
-import DatePickerInput from "@/components/Forms/DatePicker";
 import Dropdown from "@/components/Forms/Dropdown";
 
 const initialValues = {
-  homeType: '',
+  homeType: "",
   hasLoan: false,
   hasCar: false,
-  propertyDetails: '',
-  drinkingHabit: '',
+  propertyDetails: "",
+  drinkingHabit: "",
 };
 
 const validationSchema = Yup.object({
-    homeType: Yup.string().required('Home type is required'),
-  hasLoan: Yup.boolean(),
-  hasCar: Yup.boolean(),
-  propertyDetails: Yup.string().max(300, 'Max 300 characters allowed'),
-  drinkingHabit: Yup.string().required('Drinking habit is required'),
+  homeType: Yup.string().trim().required("Home type is required"),
+  hasLoan: Yup.boolean(), // ✅ not required
+  hasCar: Yup.boolean(), // ✅ not required
+  propertyDetails: Yup.string().trim().max(300, "Max 300 characters allowed").nullable(),
+  drinkingHabit: Yup.string().required("Drinking habit is required"),
 });
+
 const homeTypeOptions = [
-  { label: 'Own House', value: 'own' },
-  { label: 'Rented House', value: 'rented' },
-  { label: 'Living with Family', value: 'family' },
+  { label: "Own House", value: "own" },
+  { label: "Rented House", value: "rented" },
+  { label: "Living with Family", value: "family" },
 ];
 
 const drinkingHabitOptions = [
-  { label: 'Never', value: 'never' },
-  { label: 'Occasionally', value: 'occasionally' },
-  { label: 'Regularly', value: 'regularly' },
+  { label: "Never", value: "never" },
+  { label: "Occasionally", value: "occasionally" },
+  { label: "Regularly", value: "regularly" },
 ];
-
 
 export default function App() {
   const handleRegistration = (values: typeof initialValues) => {
@@ -54,6 +53,9 @@ export default function App() {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleRegistration}
+          validateOnChange={true}
+          validateOnBlur={true}
+          validateOnMount={true}
         >
           {({
             handleChange,
@@ -63,69 +65,70 @@ export default function App() {
             errors,
             touched,
             isValid,
+            dirty,
             setFieldValue,
           }) => (
             <View>
+              {/* Home Type */}
+              <Dropdown
+                label="Home Type"
+                value={values.homeType}
+                onValueChange={(val) => setFieldValue("homeType", val)}
+                options={homeTypeOptions}
+                error={errors.homeType}
+                touched={touched.homeType}
+              />
 
-           {/* 🏠 Home Type */}
-<Dropdown
-  label="Home Type"
-  value={values.homeType}
-  onValueChange={(val) => setFieldValue('homeType', val)}
-  options={homeTypeOptions}
-  error={errors.homeType}
-  touched={touched.homeType}
-/>
-
-{/* 🏦 Do You Have Loan */}
-<View style={styles.switchRow}>
-  <Text style={styles.label}>Do you have a loan?</Text>
-<Switch
+              {/* Loan Switch */}
+              <View style={styles.switchRow}>
+                <Text style={styles.label}>Do you have a loan?</Text>
+             <Switch
   value={values.hasLoan}
   onValueChange={(val) => {
-    setFieldValue('hasLoan', val);
+    setFieldValue("hasLoan", val); // ✅ do NOT return anything
   }}
 />
-</View>
+              </View>
 
-{/* 🚗 Have a Car */}
-<View style={styles.switchRow}>
-  <Text style={styles.label}>Have a car?</Text>
-<Switch
+              {/* Car Switch */}
+              <View style={styles.switchRow}>
+                <Text style={styles.label}>Have a car?</Text>
+            <Switch
   value={values.hasCar}
   onValueChange={(val) => {
-    setFieldValue('hasCar', val);
+    setFieldValue("hasCar", val); // ✅ do NOT return anything
   }}
 />
-</View>
+              </View>
 
-{/* 🏡 Property Details */}
-<FormTextInput
-  label="Property Details"
-  placeholder="Enter property details..."
-  value={values.propertyDetails}
-  onChangeText={handleChange('propertyDetails')}
-  onBlur={handleBlur('propertyDetails')}
-  multiline
-  numberOfLines={3}
-  error={errors.propertyDetails}
-  touched={touched.propertyDetails}
-/>
+              {/* Property Details */}
+              <FormTextInput
+                label="Property Details"
+                placeholder="Enter property details..."
+                value={values.propertyDetails}
+                onChangeText={handleChange("propertyDetails")}
+                onBlur={handleBlur("propertyDetails")}
+                multiline
+                numberOfLines={3}
+                error={errors.propertyDetails}
+                touched={touched.propertyDetails}
+              />
 
-{/* 🍺 Drinking Habit */}
-<Dropdown
-  label="Drinking Habit"
-  value={values.drinkingHabit}
-  onValueChange={(val) => setFieldValue('drinkingHabit', val)}
-  options={drinkingHabitOptions}
-  error={errors.drinkingHabit}
-  touched={touched.drinkingHabit}
-/>
+              {/* Drinking Habit */}
+              <Dropdown
+                label="Drinking Habit"
+                value={values.drinkingHabit}
+                onValueChange={(val) => setFieldValue("drinkingHabit", val)}
+                options={drinkingHabitOptions}
+                error={errors.drinkingHabit}
+                touched={touched.drinkingHabit}
+              />
 
+              {/* Save Button */}
               <TouchableOpacity
-                style={[styles.button, !isValid && styles.buttonDisabled]}
+                style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
                 onPress={() => handleSubmit()}
-                disabled={!isValid}
+                disabled={!isValid || !dirty}
                 activeOpacity={0.8}
               >
                 <Text style={styles.buttonText}>Save</Text>
@@ -164,14 +167,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginVertical: 10,
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: "500",
+    color: "#333",
   },
 });
