@@ -25,7 +25,6 @@ const initialValues = {
   partnerEducation: "",
   partnerJob: "",
   partnerSalary: "",
-  partnerStar: "",
   partnerHometownMulti: [] as string[],
   partnerChevai: "",
   partnerPhysicalChallenge: "",
@@ -53,7 +52,6 @@ const validationSchema = Yup.object({
   partnerEducation: Yup.string().required("Select education"),
   partnerJob: Yup.string().required("Select job"),
   partnerSalary: Yup.string().required("Salary required"),
-  partnerStar: Yup.string().required("Select star"),
   partnerHometownMulti: Yup.array().min(1, "Select at least 1 hometown"),
   partnerChevai: Yup.string().required("Select Chevai/Dhosam"),
   partnerPhysicalChallenge: Yup.string().required("Select physical challenge"),
@@ -77,28 +75,166 @@ const religionOptions = [
 ];
 
 const subcasteOptions = [
-  { label: "Iyer", value: "iyer" },
-  { label: "Nadar", value: "nadar" },
+ // Hindu Nadar Subcastes
+  { label: "Nadar (General)", value: "Nadar" },
+  { label: "Gramani Nadar", value: "Gramani Nadar" },
+  { label: "Shanar Nadar", value: "Shanar Nadar" },
+  { label: "Santror Nadar", value: "Santror Nadar" },
+  { label: "Nanjil Nadar", value: "Nanjil Nadar" },
+  { label: "Kongu Nadar", value: "Kongu Nadar" },
+  { label: "Nattathi Nadar", value: "Nattathi Nadar" },
+  { label: "Kovil Nadar", value: "Kovil Nadar" },
+  { label: "Perunthondaman Nadar", value: "Perunthondaman Nadar" },
+  { label: "Karukkupattai Nadar", value: "Karukkupattai Nadar" },
+  { label: "Melnattar Nadar", value: "Melnattar Nadar" },
+  { label: "Thennattar Nadar", value: "Thennattar Nadar" },
+
+  // Christian Nadar Subcastes
+  { label: "Roman Catholic Nadar", value: "Roman Catholic Nadar" },
+  { label: "Protestant Nadar", value: "Protestant Nadar" },
+  { label: "CSI Nadar", value: "CSI Nadar" },
+  { label: "Pentecostal Nadar", value: "Pentecostal Nadar" },
+  { label: "Seventh Day Adventist Nadar", value: "Seventh Day Adventist Nadar" },
+  { label: "Evangelical Nadar", value: "Evangelical Nadar" },
+  { label: "Independent Church Nadar", value: "Independent Church Nadar" },
+
+  // Generic
+  { label: "Other Nadar", value: "Other Nadar" },
 ];
 
 const educationOptions = [
-  { label: "Bachelors", value: "bachelors" },
-  { label: "Masters", value: "masters" },
+ { "label": "Ph.D. / Doctoral Degree", "value": "PhD" },
+  { "label": "M.Tech (Master of Technology)", "value": "MTech" },
+  { "label": "M.E. (Master of Engineering)", "value": "ME" },
+  { "label": "M.C.A. (Master of Computer Applications)", "value": "MCA" },
+  { "label": "M.Sc. (Master of Science)", "value": "MSc" },
+  { "label": "M.A. (Master of Arts)", "value": "MA" },
+  { "label": "M.Com (Master of Commerce)", "value": "MCom" },
+  { "label": "B.Tech (Bachelor of Technology)", "value": "BTech" },
+  { "label": "B.E. (Bachelor of Engineering)", "value": "BE" },
+  { "label": "B.Sc. (Bachelor of Science)", "value": "BSc" },
+  { "label": "B.A. (Bachelor of Arts)", "value": "BA" },
+  { "label": "B.Com (Bachelor of Commerce)", "value": "BCom" },
+  { "label": "MBBS / BDS / BAMS (Medical)", "value": "Medical" },
+  { "label": "CA / CS / ICWA (Finance/Accounting)", "value": "Finance" },
+  { "label": "Other Graduate Degree", "value": "OtherGrad" },
+  { "label": "Diploma / ITI", "value": "Diploma/ITI" },
+  { "label": "High School / School Level", "value": "HighSchool" }
 ];
 
 const jobOptions = [
-  { label: "Engineer", value: "engineer" },
-  { label: "Teacher", value: "teacher" },
+   { label: 'Software Engineer', value: 'Software Engineer' },
+  { label: 'Web Developer', value: 'Web Developer' },
+  { label: 'Mobile App Developer', value: 'Mobile App Developer' },
+  { label: 'Data Scientist', value: 'Data Scientist' },
+  { label: 'UI/UX Designer', value: 'UI/UX Designer' },
+  { label: 'Digital Marketing Specialist', value: 'Digital Marketing Specialist' },
+  { label: 'Financial Analyst', value: 'Financial Analyst' },
+  { label: 'Banking Professional', value: 'Banking Professional' },
+  { label: 'Chartered Accountant', value: 'Chartered Accountant' },
+  { label: 'Doctor', value: 'Doctor' },
+  { label: 'Nurse', value: 'Nurse' },
+  { label: 'Teacher', value: 'Teacher' },
+  { label: 'Professor', value: 'Professor' },
+  { label: 'Lawyer', value: 'Lawyer' },
+  { label: 'Civil Engineer', value: 'Civil Engineer' },
+  { label: 'Mechanical Engineer', value: 'Mechanical Engineer' },
+  { label: 'Electrical Engineer', value: 'Electrical Engineer' },
+  { label: 'Pilot', value: 'Pilot' },
+  { label: 'Air Hostess', value: 'Air Hostess' },
+  { label: 'Entrepreneur', value: 'Entrepreneur' },
+  { label: 'Business Owner', value: 'Business Owner' },
+  { label: 'Government Employee', value: 'Government Employee' },
+  { label: 'IT Professional', value: 'IT Professional' },
+  { label: 'Marketing Manager', value: 'Marketing Manager' },
+  { label: 'HR Manager', value: 'HR Manager' },
+  { label: 'Scientist', value: 'Scientist' },
+  { label: 'Research Analyst', value: 'Research Analyst' },
+  { label: 'Artist', value: 'Artist' },
+  { label: 'Actor/Actress', value: 'Actor/Actress' },
+  { label: 'Chef', value: 'Chef' },
+  { label: 'Pilot', value: 'Pilot' },
 ];
 
 const starOptions = [
-  { label: "Ashwini", value: "ashwini" },
-  { label: "Bharani", value: "bharani" },
+  { label: "Ashwini", value: "Ashwini" },
+    { label: "Bharani", value: "Bharani" },
+    { label: "Karthigai", value: "Karthigai" },
+    { label: "Rohini", value: "Rohini" },
+    { label: "Mirugasirisham", value: "Mirugasirisham" },
+    { label: "Thiruvathirai", value: "Thiruvathirai" },
+    { label: "Punarpoosam", value: "Punarpoosam" },
+    { label: "Poosam", value: "Poosam" },
+    { label: "Ayilyam", value: "Ayilyam" },
+    { label: "Magam", value: "Magam" },
+    { label: "Pooram", value: "Pooram" },
+    { label: "Uthiram", value: "Uthiram" },
+    { label: "Hastham", value: "Hastham" },
+    { label: "Chithirai", value: "Chithirai" },
+    { label: "Swathi", value: "Swathi" },
+    { label: "Visakam", value: "Visakam" },
+    { label: "Anusham", value: "Anusham" },
+    { label: "Kettai", value: "Kettai" },
+    { label: "Moolam", value: "Moolam" },
+    { label: "Pooradam", value: "Pooradam" },
+    { label: "Uthiradam", value: "Uthiradam" },
+    { label: "Thiruvonam", value: "Thiruvonam" },
+    { label: "Avittam", value: "Avittam" },
+    { label: "Sathayam", value: "Sathayam" },
+    { label: "Poorattathi", value: "Poorattathi" },
+    { label: "Uthirattathi", value: "Uthirattathi" },
+    { label: "Revathi", value: "Revathi" },
 ];
 
 const hometownOptions = [
-  { label: "Chennai", value: "chennai" },
-  { label: "Madurai", value: "madurai" },
+  { label: 'Chennai', value: 'Chennai' },
+    { label: 'Coimbatore', value: 'Coimbatore' },
+    { label: 'Madurai', value: 'Madurai' },
+    { label: 'Tiruchirappalli', value: 'Tiruchirappalli' },
+    { label: 'Salem', value: 'Salem' },
+    { label: 'Ambattur', value: 'Ambattur' },
+    { label: 'Tirunelveli', value: 'Tirunelveli' },
+    { label: 'Tiruppur', value: 'Tiruppur' },
+    { label: 'Avadi', value: 'Avadi' },
+    { label: 'Tiruvottiyur', value: 'Tiruvottiyur' },
+    { label: 'Thoothukkudi', value: 'Thoothukkudi' },
+    { label: 'Nagercoil', value: 'Nagercoil' },
+    { label: 'Thanjavur', value: 'Thanjavur' },
+    { label: 'Pallavaram', value: 'Pallavaram' },
+    { label: 'Dindigul', value: 'Dindigul' },
+    { label: 'Vellore', value: 'Vellore' },
+    { label: 'Tambaram', value: 'Tambaram' },
+    { label: 'Cuddalore', value: 'Cuddalore' },
+    { label: 'Kancheepuram', value: 'Kancheepuram' },
+    { label: 'Alandur', value: 'Alandur' },
+    { label: 'Erode', value: 'Erode' },
+    { label: 'Tiruvannamalai', value: 'Tiruvannamalai' },
+    { label: 'Kumbakonam', value: 'Kumbakonam' },
+    { label: 'Rajapalayam', value: 'Rajapalayam' },
+    { label: 'Kurichi', value: 'Kurichi' },
+    { label: 'Madavaram', value: 'Madavaram' },
+    { label: 'Pudukkottai', value: 'Pudukkottai' },
+    { label: 'Hosur', value: 'Hosur' },
+    { label: 'Ambur', value: 'Ambur' },
+    { label: 'Karaikkudi', value: 'Karaikkudi' },
+    { label: 'Neyveli', value: 'Neyveli' },
+    { label: 'Nagapattinam', value: 'Nagapattinam' },
+       { label: 'Bengaluru', value: 'Bengaluru' },
+    { label: 'Hyderabad', value: 'Hyderabad' },
+    { label: 'Mumbai', value: 'Mumbai' },
+    { label: 'Delhi', value: 'Delhi' },
+    { label: 'Kolkata', value: 'Kolkata' },
+    { label: 'Pune', value: 'Pune' },
+    { label: 'Jaipur', value: 'Jaipur' },
+    { label: 'Lucknow', value: 'Lucknow' },
+    { label: 'Nagpur', value: 'Nagpur' },
+    { label: 'Visakhapatnam', value: 'Visakhapatnam' },
+    { label: 'Bhubaneswar', value: 'Bhubaneswar' },
+    { label: 'Chandigarh', value: 'Chandigarh' },
+    { label: 'Gurugram', value: 'Gurugram' },
+    { label: 'Noida', value: 'Noida' },
+    { label: 'Kochi', value: 'Kochi' },
+    { label: 'Vijayawada', value: 'Vijayawada' },
 ];
 
 const chevaiOptions = [
@@ -249,14 +385,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerSalary}
               />
 
-              <Dropdown
-                label="Star"
-                value={values.partnerStar}
-                onValueChange={(val) => setFieldValue("partnerStar", val)}
-                options={starOptions}
-                error={errors.partnerStar as string}
-                touched={!!touched.partnerStar}
-              />
+         
 
               <MultiDropdown
                 label="Hometown Multi"
@@ -345,7 +474,6 @@ export default function PartnerPreferenceForm() {
                   setFieldValue("partnerEducation", "bachelors");
                   setFieldValue("partnerJob", "engineer");
                   setFieldValue("partnerSalary", "50000");
-                  setFieldValue("partnerStar", "ashwini");
                   setFieldValue("partnerHometownMulti", ["madurai"]);
                   setFieldValue("partnerChevai", "no");
                   setFieldValue("partnerPhysicalChallenge", "no");
