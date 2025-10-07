@@ -13,6 +13,8 @@ import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
 import DatePickerInput from "@/components/Forms/DatePicker";
 import Dropdown from "@/components/Forms/Dropdown";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const initialValues = {
   fullName: "",
@@ -219,36 +221,38 @@ const skinColorOptions = [
     { label: "Dark", value: "Dark" },
 ];
 const heightOptions = [
- { label: "2' 0\" - 61 cm", value: "2' 0\"" },
-  { label: "2' 3\" - 69 cm", value: "2' 3\"" },
-  { label: "2' 6\" - 76 cm", value: "2' 6\"" },
-  { label: "2' 9\" - 84 cm", value: "2' 9\"" },
-  { label: "3' 0\" - 91 cm", value: "3' 0\"" },
-  { label: "3' 3\" - 99 cm", value: "3' 3\"" },
-  { label: "3' 6\" - 107 cm", value: "3' 6\"" },
-  { label: "3' 9\" - 114 cm", value: "3' 9\"" },
-  { label: "4' 0\" - 122 cm", value: "4' 0\"" },
-  { label: "4' 3\" - 130 cm", value: "4' 3\"" },
-  { label: "4' 6\" - 137 cm", value: "4' 6\"" },
-  { label: "4' 9\" - 145 cm", value: "4' 9\"" },
-  { label: "5' 0\" - 152 cm", value: "5' 0\"" },
-  { label: "5' 3\" - 160 cm", value: "5' 3\"" },
-  { label: "5' 6\" - 168 cm", value: "5' 6\"" },
-  { label: "5' 9\" - 175 cm", value: "5' 9\"" },
-  { label: "6' 0\" - 183 cm", value: "6' 0\"" },
-  { label: "6' 3\" - 191 cm", value: "6' 3\"" },
-  { label: "6' 6\" - 198 cm", value: "6' 6\"" },
-  { label: "6' 9\" - 206 cm", value: "6' 9\"" },
-  { label: "7' 0\" - 213 cm", value: "7' 0\"" },
-  { label: "7' 3\" - 221 cm", value: "7' 3\"" },
-  { label: "7' 6\" - 229 cm", value: "7' 6\"" },
-  { label: "7' 9\" - 236 cm", value: "7' 9\"" },
-  { label: "8' 0\" - 244 cm", value: "8' 0\"" },
-  { label: "8' 3\" - 252 cm", value: "8' 3\"" },
-  { label: "8' 6\" - 259 cm", value: "8' 6\"" },
-  { label: "8' 9\" - 267 cm", value: "8' 9\"" },
-  { label: "8' 11\" - 272 cm", value: "8' 11\"" }, // Tallest recorded
+  { label: "2' 0\"", value: "2' 0\"" },
+  { label: "2' 3\"", value: "2' 3\"" },
+  { label: "2' 6\"", value: "2' 6\"" },
+  { label: "2' 9\"", value: "2' 9\"" },
+  { label: "3' 0\"", value: "3' 0\"" },
+  { label: "3' 3\"", value: "3' 3\"" },
+  { label: "3' 6\"", value: "3' 6\"" },
+  { label: "3' 9\"", value: "3' 9\"" },
+  { label: "4' 0\"", value: "4' 0\"" },
+  { label: "4' 3\"", value: "4' 3\"" },
+  { label: "4' 6\"", value: "4' 6\"" },
+  { label: "4' 9\"", value: "4' 9\"" },
+  { label: "5' 0\"", value: "5' 0\"" },
+  { label: "5' 3\"", value: "5' 3\"" },
+  { label: "5' 6\"", value: "5' 6\"" },
+  { label: "5' 9\"", value: "5' 9\"" },
+  { label: "6' 0\"", value: "6' 0\"" },
+  { label: "6' 3\"", value: "6' 3\"" },
+  { label: "6' 6\"", value: "6' 6\"" },
+  { label: "6' 9\"", value: "6' 9\"" },
+  { label: "7' 0\"", value: "7' 0\"" },
+  { label: "7' 3\"", value: "7' 3\"" },
+  { label: "7' 6\"", value: "7' 6\"" },
+  { label: "7' 9\"", value: "7' 9\"" },
+  { label: "8' 0\"", value: "8' 0\"" },
+  { label: "8' 3\"", value: "8' 3\"" },
+  { label: "8' 6\"", value: "8' 6\"" },
+  { label: "8' 9\"", value: "8' 9\"" },
+  { label: "8' 11\"", value: "8' 11\"" },
 ];
+
+
 const foodHabitOptions = [
     { label: "Vegetarian", value: "Veg" },
     { label: "Non-Vegetarian", value: "Non-Veg" },
@@ -293,10 +297,37 @@ const physicalChallengeOptions = [
   { label: "Partially", value: "partial" },
 ];
 
+
+
 export default function App() {
-  const handleRegistration = (values: typeof initialValues) => {
-    Alert.alert("Success", "Form submitted successfully!");
-    console.log("Form Submitted:", values);
+const API_URL =  'http://192.168.43.38:5000';
+
+
+  const handleRegistration = async (values: typeof initialValues) => {
+    try {
+      const response = await fetch(`${API_URL}/user/update-basic`, {
+        method: "PUT", // use PUT since you're updating
+        headers: { 
+          "Content-Type": "application/json",
+          // If JWT auth is used:
+          // "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to save data");
+        return;
+      }
+
+      Alert.alert("Success", "Profile saved successfully!");
+      console.log("Saved Data:", data);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Something went wrong");
+    }
   };
 
   return (
@@ -396,15 +427,15 @@ export default function App() {
                 error={errors.skinColor}
                 touched={touched.skinColor}
               />
+<Dropdown
+  label="Height (cm)"
+  value={values.height} // e.g., "165"
+  onValueChange={(val) => setFieldValue("height", val)}
+  options={heightOptions}
+  error={errors.height}
+  touched={touched.height}
+/>
 
-              <Dropdown
-                label="Height (cm)"
-                value={values.height}
-                onValueChange={(val) => setFieldValue("height", val)}
-                options={heightOptions}
-                error={errors.height}
-                touched={touched.height}
-              />
 
               <FormTextInput
                 label="Weight (kg)"
@@ -465,30 +496,29 @@ export default function App() {
               />
 
               {/* Fill Test Data Button */}
-              <TouchableOpacity
-                style={styles.fillButton}
-                onPress={() => {
-                  setFieldValue("fullName", "John Doe");
-                  setFieldValue("dob", new Date("1990-01-01"));
-                  setFieldValue("homeTown", "madurai");
-                  setFieldValue("religion", "hindu");
-                  setFieldValue("subCaste", "iyer");
-                  setFieldValue("rasi", "mesh");
-                  setFieldValue("star", "ashwini");
-                  setFieldValue("skinColor", "fair");
-                  setFieldValue("height", "165");
-                  setFieldValue("weight", "70");
-                  setFieldValue("foodHabit", "veg");
-                  setFieldValue("motherTongue", "tamil");
-                  setFieldValue("chevaiDosham", "no");
-                  setFieldValue("goldWeight", "100");
-                  setFieldValue("physicalChallenge", "no");
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>
-                  Fill Test Data
-                </Text>
-              </TouchableOpacity>
+      <TouchableOpacity
+  style={styles.fillButton}
+  onPress={() => {
+    setFieldValue("fullName", "John Doe");
+    setFieldValue("dob", new Date("1990-01-01"));
+    setFieldValue("homeTown", "Madurai");
+    setFieldValue("religion", "Hindu");
+    setFieldValue("subCaste", "Nadar");
+    setFieldValue("rasi", "Mesham");
+    setFieldValue("star", "Ashwini");
+    setFieldValue("skinColor", "Fair");
+setFieldValue("height", "5' 6\"");
+    setFieldValue("weight", "70");
+    setFieldValue("foodHabit", "Veg");
+    setFieldValue("motherTongue", "Tamil");
+    setFieldValue("chevaiDosham", "no");
+    setFieldValue("goldWeight", "100");
+    setFieldValue("physicalChallenge", "no");
+  }}
+>
+  <Text style={{ color: "#fff", fontWeight: "600" }}>Fill Test Data</Text>
+</TouchableOpacity>
+
 
               {/* Save Button */}
         <TouchableOpacity
@@ -506,6 +536,8 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#f5f7fa" },
