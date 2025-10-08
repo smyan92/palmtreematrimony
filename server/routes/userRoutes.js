@@ -1,17 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware');
+const verifyOwnership = require('../middleware/verifyOwnership');
 
-// ==================== USER ROUTES ==================== //
+// Get user profile
+router.get('/:id', authMiddleware, verifyOwnership, userController.getUserProfile);
 
-// 👉 Get user profile
-router.get('/:id', userController.getUserProfile);
+// Update profile sections
+router.put('/:id/basic', authMiddleware, verifyOwnership, userController.updateBasicDetails);
+router.put('/:id/education', authMiddleware, verifyOwnership, userController.updateEducationDetails);
+router.put('/:id/family', authMiddleware, verifyOwnership, userController.updateFamilyDetails);
+router.put('/:id/contact', authMiddleware, verifyOwnership, userController.updateContactDetails);
+router.put('/:id/partner-preference', authMiddleware, verifyOwnership, userController.updatePartnerPreferences);
 
-// 👉 Update sections of user profile
-router.put('/:id/basic', userController.updateBasicDetails);
-router.put('/:id/education', userController.updateEducationDetails);
-router.put('/:id/family', userController.updateFamilyDetails);
-router.put('/:id/contact', userController.updateContactDetails);
-router.put('/:id/partner-preference', userController.updatePartnerPreferences);
+// Update photos
+router.put('/:id/photos', authMiddleware, verifyOwnership, userController.updatePhotos);
 
 module.exports = router;

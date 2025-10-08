@@ -11,6 +11,9 @@ import {
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const API_URL = "https://your-api-url.com"; // 🔹 Replace with your backend URL
 
 // Initial form values
 const initialValues = {
@@ -28,10 +31,36 @@ const validationSchema = Yup.object({
     .notOneOf([Yup.ref("mobile")], "Alternative number must be different"),
 });
 
-export default function App() {
-  const handleRegistration = (values: typeof initialValues) => {
-    Alert.alert("Success", "Form submitted successfully!");
-    console.log("Form Submitted:", values);
+export default function ContactDetailsForm({ userId }: { userId: string }) {
+  const handleSave = async (values: typeof initialValues) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Error", "You are not logged in");
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/user/${userId}/update-contact`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to update contact details");
+        return;
+      }
+
+      Alert.alert("Success", "Contact details updated successfully!");
+      console.log("Updated Contact Details:", data.user);
+    } catch (error: any) {
+      console.error("Save Error:", error);
+      Alert.alert("Error", error.message || "Something went wrong");
+    }
   };
 
   return (
@@ -40,7 +69,7 @@ export default function App() {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={handleRegistration}
+          onSubmit={handleSave}
           validateOnChange
           validateOnBlur
         >
@@ -53,7 +82,6 @@ export default function App() {
             touched,
             isValid,
             dirty,
-            setFieldValue,
           }) => (
             <View>
               {/* Mobile Number */}
@@ -80,17 +108,14 @@ export default function App() {
                 touched={touched.alternativeNumber}
               />
 
-           
-
               {/* Save Button */}
-      <TouchableOpacity
-  style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
-  onPress={() => handleSubmit()} // ✅ wrap in arrow function
-  disabled={!isValid || !dirty}
->
-  <Text style={styles.buttonText}>Save</Text>
-</TouchableOpacity>
-
+              <TouchableOpacity
+                style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
+                onPress={() => handleSubmit()}
+                disabled={!isValid || !dirty}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
             </View>
           )}
         </Formik>
@@ -111,5 +136,4 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { backgroundColor: "#a0c8f5" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  label: { fontSize: 16, fontWeight: "500", marginBottom: 5 },
 });

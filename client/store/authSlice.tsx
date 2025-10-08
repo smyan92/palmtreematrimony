@@ -1,20 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface User {
+  id: string
   fullName: string
   mobileNo: string
+  userType: 'admin' | 'normal'   // or string if more types
+  planType: 'premium' | 'normal' // or string if more types
 }
 
 export interface AuthState {
   token: string | null
   user: User | null
-  expiry: number | null   // ✅ Add this
+  expiry: number | null
 }
 
 const initialState: AuthState = {
   token: null,
   user: null,
-  expiry: null,           // ✅ Initialize
+  expiry: null,
 }
 
 const authSlice = createSlice({

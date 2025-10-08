@@ -1,0 +1,373 @@
+[
+  {
+    "login": {
+      "mobileNo": "9876543210",
+      "fullName": "Arun Kumar",
+      "password": "hashedpassword123"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "planDetails": { "expiryDate": null, "features": [] },
+    "professional": {
+      "higherEducation": "B.E Computer Science",
+      "jobTitle": "Software Engineer",
+      "monthlySalary": "50000",
+      "jobTown": "Chennai"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": false,
+      "hasCar": true,
+      "propertyDetails": "2BHK Apartment",
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "9876543210", "alternativeNumber": "9123456780" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 23,
+      "partnerAgeTo": 28,
+      "partnerMaritalStatus": "Unmarried",
+      "partnerHometown": "Madurai",
+      "partnerJobTown": ["Chennai", "Coimbatore"],
+      "partnerReligion": "Hindu",
+      "partnerSubcaste": "Pillai",
+      "partnerEducation": "Any Degree",
+      "partnerJob": "IT Professional",
+      "partnerSalary": "30000+",
+      "partnerHometownMulti": ["Madurai", "Trichy"],
+      "partnerChevai": "Any",
+      "partnerPhysicalChallenge": "No",
+      "partnerHouseType": "Own",
+      "partnerGold": "Moderate",
+      "partnerSkinColor": "Fair",
+      "partnerStarMulti": ["Ashwini", "Bharani"],
+      "partnerRasiMulti": ["Mesham", "Rishabam"]
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/arun1.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true },
+    "createdAt": "2025-10-08T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  },
+  {
+    "login": {
+      "mobileNo": "9567890123",
+      "fullName": "Priya Lakshmi",
+      "password": "securepass456"
+    },
+    "userType": "user",
+    "planType": "premium",
+    "planDetails": {
+      "expiryDate": "2026-01-01T00:00:00Z",
+      "features": ["Chat Access", "Profile Boost"]
+    },
+    "professional": {
+      "higherEducation": "MBA Finance",
+      "jobTitle": "Financial Analyst",
+      "monthlySalary": "60000",
+      "jobTown": "Bangalore"
+    },
+    "family": {
+      "homeType": "Rental",
+      "hasLoan": true,
+      "hasCar": false,
+      "propertyDetails": "Family house in Madurai",
+      "drinkingHabit": "Occasionally"
+    },
+    "contact": { "mobile": "9567890123", "alternativeNumber": "9876543200" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 27,
+      "partnerAgeTo": 33,
+      "partnerMaritalStatus": "Unmarried",
+      "partnerHometown": "Madurai",
+      "partnerJobTown": ["Chennai", "Bangalore"],
+      "partnerReligion": "Hindu",
+      "partnerSubcaste": "Thevar",
+      "partnerEducation": "B.E or MBA",
+      "partnerJob": "Business / IT",
+      "partnerSalary": "50000+",
+      "partnerHometownMulti": ["Madurai", "Coimbatore"],
+      "partnerChevai": "Any",
+      "partnerPhysicalChallenge": "No",
+      "partnerHouseType": "Own",
+      "partnerGold": "Moderate",
+      "partnerSkinColor": "Wheatish",
+      "partnerStarMulti": ["Rohini", "Mrigasira"],
+      "partnerRasiMulti": ["Rishabam", "Mithunam"]
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/priya1.jpg"],
+      "photoPrivacy": "Private"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": false },
+    "createdAt": "2025-10-08T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  },
+  {
+    "login": {
+      "mobileNo": "9445678901",
+      "fullName": "Murugan Raja",
+      "password": "pass789"
+    },
+    "userType": "admin",
+    "planType": "premium",
+    "planDetails": {
+      "expiryDate": "2025-12-31T00:00:00Z",
+      "features": ["Admin Access", "Analytics"]
+    },
+    "professional": {
+      "higherEducation": "B.Tech IT",
+      "jobTitle": "App Developer",
+      "monthlySalary": "70000",
+      "jobTown": "Madurai"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": false,
+      "hasCar": true,
+      "propertyDetails": "Independent House",
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "9445678901", "alternativeNumber": "9090909090" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 22,
+      "partnerAgeTo": 28,
+      "partnerReligion": "Hindu",
+      "partnerEducation": "Graduate"
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/murugan1.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true },
+    "createdAt": "2025-10-08T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  },
+  {
+    "login": {
+      "mobileNo": "9911223344",
+      "fullName": "Sathish Kumar",
+      "password": "mysecurepass"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "planDetails": { "expiryDate": null, "features": [] },
+    "professional": {
+      "higherEducation": "B.Com",
+      "jobTitle": "Accountant",
+      "monthlySalary": "35000",
+      "jobTown": "Trichy"
+    },
+    "family": {
+      "homeType": "Joint",
+      "hasLoan": false,
+      "hasCar": false,
+      "propertyDetails": "Shared house",
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "9911223344" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 24,
+      "partnerAgeTo": 29,
+      "partnerReligion": "Hindu",
+      "partnerEducation": "Any Degree"
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/sathish.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": false }
+  },
+  {
+    "login": {
+      "mobileNo": "9001122334",
+      "fullName": "Kavya Ramesh",
+      "password": "kavyapass"
+    },
+    "userType": "user",
+    "planType": "premium",
+    "planDetails": {
+      "expiryDate": "2025-12-31T00:00:00Z",
+      "features": ["Chat Access", "Unlimited Views"]
+    },
+    "professional": {
+      "higherEducation": "B.Sc Nursing",
+      "jobTitle": "Nurse",
+      "monthlySalary": "40000",
+      "jobTown": "Madurai"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": false,
+      "hasCar": false,
+      "propertyDetails": "Own house",
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "9001122334" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 26,
+      "partnerAgeTo": 32,
+      "partnerReligion": "Hindu"
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/kavya.jpg"],
+      "photoPrivacy": "Private"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true }
+  },
+  {
+    "login": {
+      "mobileNo": "9099888777",
+      "fullName": "Ravi Shankar",
+      "password": "ravipass"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "planDetails": { "expiryDate": null, "features": [] },
+    "professional": {
+      "higherEducation": "Diploma Mechanical",
+      "jobTitle": "Technician",
+      "monthlySalary": "25000",
+      "jobTown": "Salem"
+    },
+    "family": {
+      "homeType": "Rental",
+      "hasLoan": false,
+      "hasCar": false,
+      "propertyDetails": "",
+      "drinkingHabit": "Occasionally"
+    },
+    "contact": { "mobile": "9099888777" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 23,
+      "partnerAgeTo": 27,
+      "partnerReligion": "Hindu"
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/ravi.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": false }
+  },
+  {
+    "login": {
+      "mobileNo": "8123456789",
+      "fullName": "Meena Devi",
+      "password": "meenapass"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "planDetails": { "expiryDate": null, "features": [] },
+    "professional": {
+      "higherEducation": "B.A English",
+      "jobTitle": "Teacher",
+      "monthlySalary": "32000",
+      "jobTown": "Dindigul"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": true,
+      "hasCar": false,
+      "propertyDetails": "Small house",
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "8123456789" },
+    "partnerPreferences": {
+      "partnerAgeFrom": 27,
+      "partnerAgeTo": 33,
+      "partnerReligion": "Hindu"
+    },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/meena.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true }
+  },
+  {
+    "login": {
+      "mobileNo": "7011223344",
+      "fullName": "Karthik Bala",
+      "password": "karthikpass"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "professional": {
+      "higherEducation": "B.Sc Computer Science",
+      "jobTitle": "Designer",
+      "monthlySalary": "30000",
+      "jobTown": "Coimbatore"
+    },
+    "family": {
+      "homeType": "Rental",
+      "hasLoan": false,
+      "hasCar": false,
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "7011223344" },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/karthik.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": false }
+  },
+  {
+    "login": {
+      "mobileNo": "7000011111",
+      "fullName": "Lakshmi Narayanan",
+      "password": "lakshmipass"
+    },
+    "userType": "user",
+    "planType": "premium",
+    "planDetails": {
+      "expiryDate": "2026-03-01T00:00:00Z",
+      "features": ["Profile Boost", "Chat Access"]
+    },
+    "professional": {
+      "higherEducation": "MBA HR",
+      "jobTitle": "HR Manager",
+      "monthlySalary": "75000",
+      "jobTown": "Chennai"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": true,
+      "hasCar": true,
+      "propertyDetails": "Flat in Chennai",
+      "drinkingHabit": "Occasionally"
+    },
+    "contact": { "mobile": "7000011111" },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/lakshmi.jpg"],
+      "photoPrivacy": "Private"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true }
+  },
+  {
+    "login": {
+      "mobileNo": "7334455667",
+      "fullName": "Divya Raj",
+      "password": "divyapass"
+    },
+    "userType": "user",
+    "planType": "normal",
+    "professional": {
+      "higherEducation": "M.Sc Physics",
+      "jobTitle": "Lecturer",
+      "monthlySalary": "45000",
+      "jobTown": "Madurai"
+    },
+    "family": {
+      "homeType": "Own",
+      "hasLoan": false,
+      "hasCar": false,
+      "drinkingHabit": "Never"
+    },
+    "contact": { "mobile": "7334455667" },
+    "photos": {
+      "profilePhotoUrls": ["https://example.com/photos/divya.jpg"],
+      "photoPrivacy": "Public"
+    },
+    "status": { "isProfileCompleted": true, "isVerified": true }
+  }
+]

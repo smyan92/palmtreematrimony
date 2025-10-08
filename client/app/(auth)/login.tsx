@@ -91,14 +91,22 @@ export default function AuthScreen() {
           return
         }
 
-        const expiry = Date.now() + 60 * 60 * 1000
-        dispatch(
-          setCredentials({
-            token: data.token,
-            user: { mobileNo: data.user.mobileNo, fullName: data.user.fullName },
-            expiry,
-          })
-        )
+     const expiry = Date.now() + 234 * 60 * 60 * 1000;
+
+  dispatch(
+  setCredentials({
+    token: data.token,
+    user: {
+      id: data.user.id,
+      mobileNo: data.user.mobileNo,
+      fullName: data.user.fullName,
+      userType: data.user.userType,
+      planType: data.user.planType,
+    },
+    expiry,
+  })
+);
+
 
         await AsyncStorage.setItem('token', data.token)
         await AsyncStorage.setItem('user', JSON.stringify(data.user))

@@ -53,15 +53,6 @@ const validationSchema = Yup.object({
   star: Yup.string().required("Star is required"),
   skinColor: Yup.string().required("Skin color is required"),
   height: Yup.string()
-    .matches(/^[0-9]+(\.[0-9]+)?$/, "Height must be a number")
-    .test(
-      "height-range",
-      "Height must be between 100 cm and 220 cm",
-      (val) => {
-        const num = Number(val);
-        return num >= 100 && num <= 220;
-      }
-    )
     .required("Height is required"),
   weight: Yup.string()
     .matches(/^[0-9]+$/, "Weight must be digits only")
@@ -303,32 +294,45 @@ export default function App() {
 const API_URL =  'http://192.168.43.38:5000';
 
 
-  const handleRegistration = async (values: typeof initialValues) => {
-    try {
-      const response = await fetch(`${API_URL}/user/update-basic`, {
-        method: "PUT", // use PUT since you're updating
-        headers: { 
-          "Content-Type": "application/json",
-          // If JWT auth is used:
-          // "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(values),
-      });
+const handleRegistration = async (values: typeof initialValues) => {
+  try {
+    // Get user ID and token from AsyncStorage
+    const token = await AsyncStorage.getItem("token");
+    const userString = await AsyncStorage.getItem("user");
+    const user = userString ? JSON.parse(userString) : null;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        Alert.alert("Error", data.message || "Failed to save data");
-        return;
-      }
-
-      Alert.alert("Success", "Profile saved successfully!");
-      console.log("Saved Data:", data);
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Something went wrong");
+    if (!user) {
+      Alert.alert("Error", "No user found. Please login first.");
+      return;
     }
-  };
+
+    const userId = user.id; // get ID from stored user
+
+    // Make PUT request with user ID in URL
+    const response = await fetch(`${API_URL}/user/${userId}/basic`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(values),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Alert.alert("Error", data.message || "Failed to save data");
+      return;
+    }
+
+    Alert.alert("Success", "Profile saved successfully!");
+    console.log("Saved Data:", data);
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Error", "Something went wrong");
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.safeArea}>

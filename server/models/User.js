@@ -5,75 +5,107 @@ const userSchema = new mongoose.Schema(
     // ======================================================
     // 🔹 LOGIN DETAILS
     // ======================================================
-    mobileNo: { type: String, required: true, unique: true },
-    fullName: { type: String, required: true },
-    password: { type: String, required: true },
+    login: {
+      mobileNo: { type: String, required: true, unique: true },
+      fullName: { type: String, required: true },
+      password: { type: String, required: true },
+    },
+
+    // ======================================================
+    // 🔹 USER TYPE & PLAN
+    // ======================================================
+    userType: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+    },
+    planType: {
+      type: String,
+      enum: ["premium", "normal"],
+      default: "normal",
+    },
+    planDetails: {
+      expiryDate: { type: Date },        // for premium users
+      features: [{ type: String }],      // optional features list
+    },
 
     // ======================================================
     // 🔹 EDUCATION & PROFESSIONAL DETAILS
     // ======================================================
-    higherEducation: { type: String },
-    jobTitle: { type: String },
-    monthlySalary: { type: String },
-    jobTown: { type: String },
+    professional: {
+      higherEducation: { type: String },
+      jobTitle: { type: String },
+      monthlySalary: { type: String },
+      jobTown: { type: String },
+    },
 
     // ======================================================
     // 🔹 FAMILY DETAILS
     // ======================================================
-    homeType: { type: String }, // e.g., "Own", "Rental", "Joint"
-    hasLoan: { type: Boolean, default: false },
-    hasCar: { type: Boolean, default: false },
-    propertyDetails: { type: String },
-    drinkingHabit: {
-      type: String,
-      enum: ["Never", "Occasionally", "Regularly", "Not Specified"],
-      default: "Not Specified",
+    family: {
+      homeType: { type: String }, // e.g., "Own", "Rental", "Joint"
+      hasLoan: { type: Boolean, default: false },
+      hasCar: { type: Boolean, default: false },
+      propertyDetails: { type: String },
+      drinkingHabit: {
+        type: String,
+        enum: ["Never", "Occasionally", "Regularly", "Not Specified"],
+        default: "Not Specified",
+      },
     },
 
     // ======================================================
     // 🔹 CONTACT DETAILS
     // ======================================================
-    mobile: { type: String },
-    alternativeNumber: { type: String },
+    contact: {
+      mobile: { type: String },
+      alternativeNumber: { type: String },
+    },
 
     // ======================================================
     // 🔹 PARTNER PREFERENCES
     // ======================================================
-    partnerName: { type: String },
-    partnerAgeFrom: { type: Number },
-    partnerAgeTo: { type: Number },
-    partnerMaritalStatus: {
-      type: String,
-      enum: ["Unmarried", "Divorced", "Widowed", "Separated", "Any"],
-      default: "Any",
+    partnerPreferences: {
+      partnerName: { type: String },
+      partnerAgeFrom: { type: Number },
+      partnerAgeTo: { type: Number },
+      partnerMaritalStatus: {
+        type: String,
+        enum: ["Unmarried", "Divorced", "Widowed", "Separated", "Any"],
+        default: "Any",
+      },
+      partnerHometown: { type: String },
+      partnerJobTown: [{ type: String }],
+      partnerReligion: { type: String },
+      partnerSubcaste: { type: String },
+      partnerEducation: { type: String },
+      partnerJob: { type: String },
+      partnerSalary: { type: String },
+      partnerHometownMulti: [{ type: String }],
+      partnerChevai: { type: String, enum: ["Yes", "No", "Don't Know", "Any"], default: "Any" },
+      partnerPhysicalChallenge: { type: String, enum: ["Yes", "No", "Any"], default: "Any" },
+      partnerHouseType: { type: String },
+      partnerGold: { type: String },
+      partnerSkinColor: { type: String },
+      partnerStarMulti: [{ type: String }],
+      partnerRasiMulti: [{ type: String }],
     },
-    partnerHometown: { type: String },
-    partnerJobTown: [{ type: String }],
-    partnerReligion: { type: String },
-    partnerSubcaste: { type: String },
-    partnerEducation: { type: String },
-    partnerJob: { type: String },
-    partnerSalary: { type: String },
-    partnerHometownMulti: [{ type: String }],
-    partnerChevai: { type: String, enum: ["Yes", "No", "Don't Know", "Any"], default: "Any" },
-    partnerPhysicalChallenge: { type: String, enum: ["Yes", "No", "Any"], default: "Any" },
-    partnerHouseType: { type: String },
-    partnerGold: { type: String },
-    partnerSkinColor: { type: String },
-    partnerStarMulti: [{ type: String }],
-    partnerRasiMulti: [{ type: String }],
 
     // ======================================================
-    // 🔹 PHOTOS (optional)
+    // 🔹 PHOTOS
     // ======================================================
-    profilePhotoUrls: [{ type: String }],
-    photoPrivacy: { type: String, enum: ["Public", "Private"], default: "Public" },
+    photos: {
+      profilePhotoUrls: [{ type: String }],
+      photoPrivacy: { type: String, enum: ["Public", "Private"], default: "Public" },
+    },
 
     // ======================================================
     // 🔹 STATUS FLAGS
     // ======================================================
-    isProfileCompleted: { type: Boolean, default: false },
-    isVerified: { type: Boolean, default: false },
+    status: {
+      isProfileCompleted: { type: Boolean, default: false },
+      isVerified: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );
