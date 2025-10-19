@@ -1,7 +1,40 @@
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const User = require("../models/User");
 
+const updatePhotos = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { photoPrivacy } = req.body;
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No photos uploaded" });
+    }
+
+    const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.photos.profilePhotoUrls = fileUrls;
+    user.photos.photoPrivacy = photoPrivacy || "Public";
+    await user.save();
+
+    res.status(200).json({
+      message: "Photos uploaded successfully",
+      photos: user.photos,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Server error while uploading photos" });
+  }
+};
+
+
+
 // ==================== Get User Profile ====================
-exports.getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-login.password");
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -12,57 +45,31 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// ==================== Update Photos ====================
-exports.updatePhotos = async (req, res) => {
-  const { profilePhotoUrls, photoPrivacy } = req.body;
-
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    user.photos = {
-      profilePhotoUrls: profilePhotoUrls || user.photos?.profilePhotoUrls || [],
-      photoPrivacy: photoPrivacy || user.photos?.photoPrivacy || "Public",
-    };
-
-    await user.save();
-    res.json({ message: "Photos updated successfully", photos: user.photos });
-  } catch (err) {
-    console.error("Update Photos Error:", err);
-    res.status(500).json({ message: "Server error while updating photos" });
-  }
-};
-
 // ==================== Update Basic Details ====================
-exports.updateBasicDetails = async (req, res) => {
-  const {
-    fullName, dob, homeTown, religion, subCaste, rasi, star,
-    skinColor, height, weight, foodHabit, motherTongue,
-    chevaiDosham, goldWeight, physicalChallenge, profilePhotoUrls
-  } = req.body;
-
+const updateBasicDetails = async (req, res) => {
+  const data = req.body;
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.basic = {
       ...user.basic,
-      fullName: fullName || user.basic?.fullName,
-      dob: dob || user.basic?.dob,
-      homeTown: homeTown || user.basic?.homeTown,
-      religion: religion || user.basic?.religion,
-      subCaste: subCaste || user.basic?.subCaste,
-      rasi: rasi || user.basic?.rasi,
-      star: star || user.basic?.star,
-      skinColor: skinColor || user.basic?.skinColor,
-      height: height || user.basic?.height,
-      weight: weight || user.basic?.weight,
-      foodHabit: foodHabit || user.basic?.foodHabit,
-      motherTongue: motherTongue || user.basic?.motherTongue,
-      chevaiDosham: chevaiDosham || user.basic?.chevaiDosham,
-      goldWeight: goldWeight || user.basic?.goldWeight,
-      physicalChallenge: physicalChallenge || user.basic?.physicalChallenge,
-      profilePhotoUrls: profilePhotoUrls || user.basic?.profilePhotoUrls,
+      fullName: data.fullName ?? user.basic?.fullName,
+      dob: data.dob ?? user.basic?.dob,
+      homeTown: data.homeTown ?? user.basic?.homeTown,
+      religion: data.religion ?? user.basic?.religion,
+      subCaste: data.subCaste ?? user.basic?.subCaste,
+      rasi: data.rasi ?? user.basic?.rasi,
+      star: data.star ?? user.basic?.star,
+      skinColor: data.skinColor ?? user.basic?.skinColor,
+      height: data.height ?? user.basic?.height,
+      weight: data.weight ?? user.basic?.weight,
+      foodHabit: data.foodHabit ?? user.basic?.foodHabit,
+      motherTongue: data.motherTongue ?? user.basic?.motherTongue,
+      chevaiDosham: data.chevaiDosham ?? user.basic?.chevaiDosham,
+      goldWeight: data.goldWeight ?? user.basic?.goldWeight,
+      physicalChallenge: data.physicalChallenge ?? user.basic?.physicalChallenge,
+      profilePhotoUrls: data.profilePhotoUrls ?? user.basic?.profilePhotoUrls,
     };
 
     user.status = { ...user.status, isProfileCompleted: true };
@@ -76,19 +83,18 @@ exports.updateBasicDetails = async (req, res) => {
 };
 
 // ==================== Update Education Details ====================
-exports.updateEducationDetails = async (req, res) => {
-  const { higherEducation, jobTitle, monthlySalary, jobTown } = req.body;
-
+const updateEducationDetails = async (req, res) => {
+  const data = req.body;
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.professional = {
       ...user.professional,
-      higherEducation: higherEducation ?? user.professional?.higherEducation,
-      jobTitle: jobTitle ?? user.professional?.jobTitle,
-      monthlySalary: monthlySalary ?? user.professional?.monthlySalary,
-      jobTown: jobTown ?? user.professional?.jobTown,
+      higherEducation: data.higherEducation ?? user.professional?.higherEducation,
+      jobTitle: data.jobTitle ?? user.professional?.jobTitle,
+      monthlySalary: data.monthlySalary ?? user.professional?.monthlySalary,
+      jobTown: data.jobTown ?? user.professional?.jobTown,
     };
 
     user.status.isEducationCompleted = true;
@@ -102,18 +108,17 @@ exports.updateEducationDetails = async (req, res) => {
 };
 
 // ==================== Update Family Details ====================
-exports.updateFamilyDetails = async (req, res) => {
-  const { homeType, hasLoan, hasCar, propertyDetails, drinkingHabit } = req.body;
-
+const updateFamilyDetails = async (req, res) => {
+  const data = req.body;
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (homeType !== undefined) user.family.homeType = homeType;
-    if (hasLoan !== undefined) user.family.hasLoan = hasLoan;
-    if (hasCar !== undefined) user.family.hasCar = hasCar;
-    if (propertyDetails !== undefined) user.family.propertyDetails = propertyDetails;
-    if (drinkingHabit !== undefined) user.family.drinkingHabit = drinkingHabit;
+    if (data.homeType !== undefined) user.family.homeType = data.homeType;
+    if (data.hasLoan !== undefined) user.family.hasLoan = data.hasLoan;
+    if (data.hasCar !== undefined) user.family.hasCar = data.hasCar;
+    if (data.propertyDetails !== undefined) user.family.propertyDetails = data.propertyDetails;
+    if (data.drinkingHabit !== undefined) user.family.drinkingHabit = data.drinkingHabit;
 
     await user.save();
     res.json({ message: "Family details updated", user });
@@ -124,15 +129,14 @@ exports.updateFamilyDetails = async (req, res) => {
 };
 
 // ==================== Update Contact Details ====================
-exports.updateContactDetails = async (req, res) => {
-  const { mobile, alternativeNumber } = req.body;
-
+const updateContactDetails = async (req, res) => {
+  const data = req.body;
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.contact.mobile = mobile || user.contact.mobile;
-    user.contact.alternativeNumber = alternativeNumber || user.contact.alternativeNumber;
+    user.contact.mobile = data.mobile ?? user.contact.mobile;
+    user.contact.alternativeNumber = data.alternativeNumber ?? user.contact.alternativeNumber;
 
     await user.save();
     res.json({ message: "Contact details updated", user });
@@ -143,23 +147,32 @@ exports.updateContactDetails = async (req, res) => {
 };
 
 // ==================== Update Partner Preferences ====================
-exports.updatePartnerPreferences = async (req, res) => {
+const updatePartnerPreferences = async (req, res) => {
   const data = req.body;
-
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const p = user.partnerPreferences;
-
+    const p = user.partnerPreferences || {};
     Object.keys(data).forEach((key) => {
       p[key] = data[key] ?? p[key];
     });
 
+    user.partnerPreferences = p;
     await user.save();
     res.json({ message: "Partner preferences updated", user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+module.exports = {
+  updatePhotos,
+  getUserProfile,
+  updateBasicDetails,
+  updateEducationDetails,
+  updateFamilyDetails,
+  updateContactDetails,
+  updatePartnerPreferences,
 };

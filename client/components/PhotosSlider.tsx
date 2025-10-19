@@ -22,7 +22,7 @@ const CARD_WIDTH = width * 0.85;
 const SPACING = width * 0.05;
 const MAX_PHOTOS = 3;
 const API_URL = "http://192.168.43.38:5000";
-// ✅ Define the type before using it
+
 type PhotoValues = {
   images: string[];
   photoPrivacy: "Public" | "Private";
@@ -51,85 +51,83 @@ const ImageSliderForm: React.FC = () => {
     });
   };
 
-  const pickImageFormik = async (
-    values: { images: string[] },
-    setFieldValue: (field: string, value: any) => void,
-    replaceIndex?: number
-  ) => {
+  const pickImageFormik = async (values: PhotoValues, setFieldValue: (field: string, value: any) => void, index?: number) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
       quality: 0.7,
     });
 
     if (!result.canceled && result.assets.length > 0) {
       const uri = result.assets[0].uri;
-      const newImages = [...values.images];
-      if (replaceIndex !== undefined) {
-        newImages[replaceIndex] = uri;
-      } else if (values.images.length < MAX_PHOTOS) {
-        newImages.push(uri);
-      } else {
-        newImages[0] = uri;
-      }
-      setFieldValue("images", newImages);
+      const updatedImages = [...values.images];
+      if (index !== undefined) updatedImages[index] = uri;
+      else updatedImages.push(uri);
+      setFieldValue("images", updatedImages);
     }
   };
 
-  const removeImageFormik = (
-    values: { images: string[] },
-    setFieldValue: (field: string, value: any) => void,
-    index: number
-  ) => {
-    const newImages = values.images.filter((_, i) => i !== index);
-    setFieldValue("images", newImages);
+  const removeImageFormik = (values: PhotoValues, setFieldValue: (field: string, value: any) => void, index: number) => {
+    const updatedImages = [...values.images];
+    updatedImages.splice(index, 1);
+    setFieldValue("images", updatedImages);
   };
 
-const handleSavePhotos = async (values: PhotoValues) => {
+const handleUpload = async (values: PhotoValues) => {
   try {
-    const token = await AsyncStorage.getItem("token");
+    const token = (await AsyncStorage.getItem("token")) || "";
     const userString = await AsyncStorage.getItem("user");
     const user = userString ? JSON.parse(userString) : null;
 
-    if (!user) {
-      Alert.alert("Error", "No user found. Please login first.");
+    if (!token || !user?.id) {
+      Alert.alert("Error", "Please login first.");
       return;
     }
 
-    const userId = user.id;
+    const formData = new FormData();
 
-    const response = await fetch(`${API_URL}/user/${userId}/photos`, {
+    for (let i = 0; i < values.images.length; i++) {
+      const uri = values.images[i];
+      const filename = uri.split("/").pop();
+      const match = /\.(\w+)$/.exec(filename || "");
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+      formData.append("photos", {
+        uri,
+        name: filename,
+        type,
+      } as any);
+    }
+
+    formData.append("photoPrivacy", values.photoPrivacy);
+
+    const response = await fetch(`${API_URL}/users/${user.id}/photos`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        Authorization: `Bearer ${token}`,
+        // DO NOT set Content-Type manually — fetch will set multipart/form-data automatically
       },
-      body: JSON.stringify({
-        profilePhotoUrls: values.images,
-        photoPrivacy: values.photoPrivacy,
-      }),
+      body: formData,
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      Alert.alert("Error", data.message || "Failed to save photos");
-      return;
+    if (response.ok) {
+      Alert.alert("Success", "Photos uploaded successfully!");
+    } else {
+      Alert.alert("Error", data.message || "Upload failed");
     }
-
-    Alert.alert("Success", "Photos saved successfully!");
-    console.log("Saved Photos:", data);
-  } catch (err: any) {
-    console.error("Save Photos Error:", err);
-    Alert.alert("Error", err.message || "Something went wrong");
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert("Error", error.message || "Something went wrong");
   }
 };
 
+
   return (
-    <Formik
-      initialValues={{ images: [] as string[], photoPrivacy: "Public" }}
+    <Formik<PhotoValues>
+      initialValues={{ images: [], photoPrivacy: "Public" }}
       validationSchema={validationSchema}
-      onSubmit={handleSavePhotos}
+      onSubmit={handleUpload}
     >
       {({ values, setFieldValue, handleSubmit, errors, touched, isSubmitting }) => {
         const flatListData: (string | "placeholder")[] =
@@ -152,38 +150,36 @@ const handleSavePhotos = async (values: PhotoValues) => {
                 snapToAlignment="start"
                 contentContainerStyle={styles.flatListContent}
                 renderItem={({ item, index }) =>
-                  item === "placeholder"
-                    ? (
+                  item === "placeholder" ? (
+                    <TouchableOpacity
+                      style={[styles.imageCard, styles.placeholder]}
+                      onPress={() => pickImageFormik(values, setFieldValue)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="cloud-upload-outline" size={36} color="#45A049" />
+                      <Text style={styles.uploadText}>Upload Photo</Text>
+                      <Text style={[styles.limitText, { fontWeight: "bold" }]}>
+                        (Max {MAX_PHOTOS} photos)
+                      </Text>
+                      <Text style={styles.limitText}>each photo max 2MB</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.imageCardContainer}>
+                      <Image source={{ uri: item as string }} style={styles.imageCard} />
                       <TouchableOpacity
-                        style={[styles.imageCard, styles.placeholder]}
-                        onPress={() => pickImageFormik(values, setFieldValue)}
-                        activeOpacity={0.8}
+                        style={styles.deleteButton}
+                        onPress={() => removeImageFormik(values, setFieldValue, index - 1)}
                       >
-                        <Ionicons name="cloud-upload-outline" size={36} color="#45A049" />
-                        <Text style={styles.uploadText}>Upload Photo</Text>
-                        <Text style={[styles.limitText, { fontWeight: "bold" }]}>
-                          (Max {MAX_PHOTOS} photos)
-                        </Text>
-                        <Text style={styles.limitText}>each photo max 2MB</Text>
+                        <Ionicons name="close-circle" size={24} color="#FF3B30" />
                       </TouchableOpacity>
-                    )
-                    : (
-                      <View style={styles.imageCardContainer}>
-                        <Image source={{ uri: item as string }} style={styles.imageCard} />
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={() => removeImageFormik(values, setFieldValue, index - 1)}
-                        >
-                          <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.replaceButton}
-                          onPress={() => pickImageFormik(values, setFieldValue, index - 1)}
-                        >
-                          <Ionicons name="pencil" size={20} color="#007bff" />
-                        </TouchableOpacity>
-                      </View>
-                    )
+                      <TouchableOpacity
+                        style={styles.replaceButton}
+                        onPress={() => pickImageFormik(values, setFieldValue, index - 1)}
+                      >
+                        <Ionicons name="pencil" size={20} color="#007bff" />
+                      </TouchableOpacity>
+                    </View>
+                  )
                 }
               />
 

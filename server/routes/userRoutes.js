@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/userController');
-const authMiddleware = require('../middleware/authMiddleware');
-const verifyOwnership = require('../middleware/verifyOwnership');
-
+const userController = require("../controllers/userController");
+const upload = require("../middleware/uploadMiddleware"); // multer instance
+const authMiddleware = require("../middleware/authMiddleware");
+const verifyOwnership = require("../middleware/verifyOwnership");
 // Get user profile
 router.get('/:id', authMiddleware, verifyOwnership, userController.getUserProfile);
 
@@ -14,7 +14,13 @@ router.put('/:id/family', authMiddleware, verifyOwnership, userController.update
 router.put('/:id/contact', authMiddleware, verifyOwnership, userController.updateContactDetails);
 router.put('/:id/partner-preference', authMiddleware, verifyOwnership, userController.updatePartnerPreferences);
 
-// Update photos
-router.put('/:id/photos', authMiddleware, verifyOwnership, userController.updatePhotos);
+// ✅ Important: upload.array is a function provided by multer instance
+router.put(
+  "/:id/photos",
+  authMiddleware,
+  verifyOwnership,
+  upload.array("photos", 3), // max 3 files, field name must match FormData
+  userController.updatePhotos
+);
 
 module.exports = router;

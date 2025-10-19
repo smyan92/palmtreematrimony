@@ -5,6 +5,8 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes'); // ✅ import user routes
 
 const app = express();
+const path = require('path');
+
 app.use(express.json());
 
 // ==================== Connect MongoDB ====================
@@ -18,6 +20,9 @@ mongoose.connect(process.env.MONGO_URI, {
 // ==================== Routes ====================
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes); // ✅ use user routes
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
 
 // ==================== Start Server ====================
 const PORT = process.env.PORT || 5000;

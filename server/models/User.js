@@ -12,6 +12,27 @@ const userSchema = new mongoose.Schema(
     },
 
     // ======================================================
+    // 🔹 BASIC DETAILS
+    // ======================================================
+    basic: {
+      fullName: { type: String },
+      dob: { type: Date },
+      homeTown: { type: String },
+      religion: { type: String },
+      subCaste: { type: String },
+      rasi: { type: String },
+      star: { type: String },
+      skinColor: { type: String },
+      height: { type: String },
+      weight: { type: String },
+      foodHabit: { type: String },
+      motherTongue: { type: String },
+      chevaiDosham: { type: String },
+      goldWeight: { type: String },
+      physicalChallenge: { type: String },
+    },
+
+    // ======================================================
     // 🔹 USER TYPE & PLAN
     // ======================================================
     userType: {
@@ -25,8 +46,8 @@ const userSchema = new mongoose.Schema(
       default: "normal",
     },
     planDetails: {
-      expiryDate: { type: Date },        // for premium users
-      features: [{ type: String }],      // optional features list
+      expiryDate: { type: Date },
+      features: [{ type: String }],
     },
 
     // ======================================================
@@ -43,7 +64,7 @@ const userSchema = new mongoose.Schema(
     // 🔹 FAMILY DETAILS
     // ======================================================
     family: {
-      homeType: { type: String }, // e.g., "Own", "Rental", "Joint"
+      homeType: { type: String },
       hasLoan: { type: Boolean, default: false },
       hasCar: { type: Boolean, default: false },
       propertyDetails: { type: String },
