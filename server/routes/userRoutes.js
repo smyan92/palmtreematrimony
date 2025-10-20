@@ -4,6 +4,7 @@ const userController = require("../controllers/userController");
 const upload = require("../middleware/uploadMiddleware"); // multer instance
 const authMiddleware = require("../middleware/authMiddleware");
 const verifyOwnership = require("../middleware/verifyOwnership");
+
 // Get user profile
 router.get('/:id', authMiddleware, verifyOwnership, userController.getUserProfile);
 
@@ -14,13 +15,21 @@ router.put('/:id/family', authMiddleware, verifyOwnership, userController.update
 router.put('/:id/contact', authMiddleware, verifyOwnership, userController.updateContactDetails);
 router.put('/:id/partner-preference', authMiddleware, verifyOwnership, userController.updatePartnerPreferences);
 
-// ✅ Important: upload.array is a function provided by multer instance
+// Upload photos (max 3)
 router.put(
   "/:id/photos",
   authMiddleware,
   verifyOwnership,
-  upload.array("photos", 3), // max 3 files, field name must match FormData
+  upload.array("photos", 3),
   userController.updatePhotos
 );
+
+// ✅ New routes
+
+// Get all photos of a user
+router.get("/:id/photos", authMiddleware, verifyOwnership, userController.getUserPhotos);
+
+// Delete a specific photo
+router.delete("/:id/photos", authMiddleware, verifyOwnership, userController.deletePhoto);
 
 module.exports = router;
