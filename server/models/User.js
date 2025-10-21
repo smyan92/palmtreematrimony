@@ -70,7 +70,7 @@ const userSchema = new mongoose.Schema(
       propertyDetails: { type: String },
       drinkingHabit: {
         type: String,
-        enum: ["Never", "Occasionally", "Regularly", "Not Specified"],
+        enum: ["Never", "Occasionally", "Regularly"],
         default: "Not Specified",
       },
     },
@@ -86,31 +86,31 @@ const userSchema = new mongoose.Schema(
     // ======================================================
     // 🔹 PARTNER PREFERENCES
     // ======================================================
-    partnerPreferences: {
-      partnerName: { type: String },
-      partnerAgeFrom: { type: Number },
-      partnerAgeTo: { type: Number },
-      partnerMaritalStatus: {
-        type: String,
-        enum: ["Unmarried", "Divorced", "Widowed", "Separated", "Any"],
-        default: "Any",
-      },
-      partnerHometown: { type: String },
-      partnerJobTown: [{ type: String }],
-      partnerReligion: { type: String },
-      partnerSubcaste: { type: String },
-      partnerEducation: { type: String },
-      partnerJob: { type: String },
-      partnerSalary: { type: String },
-      partnerHometownMulti: [{ type: String }],
-      partnerChevai: { type: String, enum: ["Yes", "No", "Don't Know", "Any"], default: "Any" },
-      partnerPhysicalChallenge: { type: String, enum: ["Yes", "No", "Any"], default: "Any" },
-      partnerHouseType: { type: String },
-      partnerGold: { type: String },
-      partnerSkinColor: { type: String },
-      partnerStarMulti: [{ type: String }],
-      partnerRasiMulti: [{ type: String }],
-    },
+ partnerPreferences: {
+  partnerAgeFrom: { type: Number },
+  partnerAgeTo: { type: Number },
+  partnerMaritalStatus: {
+    type: String,
+    enum: ["Unmarried", "Divorced", "Widowed", "Separated", "Any", "Single", "Married"], // added Single, Married for frontend flexibility
+    default: "Any",
+  },
+  partnerHometown: { type: String, trim: true },
+  partnerJobTown: { type: [String], default: [] },
+  partnerReligion: { type: String, trim: true },
+  partnerSubcaste: { type: String, trim: true },
+  partnerEducation: { type: String, trim: true },
+  partnerJob: { type: String, trim: true },
+  partnerSalary: { type: String, trim: true },
+  partnerHometownMulti: { type: [String], default: [] },
+  partnerChevai: { type: String, enum: ["Yes", "No", "Don't Know", "Any", "yes", "no"], default: "Any" }, // added lowercase
+  partnerPhysicalChallenge: { type: String, enum: ["Yes", "No", "Any", "yes", "no"], default: "Any" }, // added lowercase
+ partnerHouseType: { type: String },
+  partnerGold: { type: String, trim: true },
+  partnerSkinColor: { type: String, trim: true },
+  partnerStarMulti: { type: [String], default: [] },
+  partnerRasiMulti: { type: [String], default: [] },
+},
+
 
     // ======================================================
     // 🔹 PHOTOS

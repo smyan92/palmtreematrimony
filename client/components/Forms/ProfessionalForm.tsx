@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,11 +12,13 @@ import {
 import { Formik } from "formik";
 import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 
 import FormTextInput from "@/components/Forms/TextInput";
 import Dropdown from "@/components/Forms/Dropdown";
 
+const API_URL = "http://192.168.43.38:5000";
+
+// ✅ Initial empty values
 const initialValues = {
   higherEducation: "",
   jobTitle: "",
@@ -81,66 +83,106 @@ const jobTownOptions = [
 ];
 
 export default function JobEducationForm() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialData, setInitialData] = useState<typeof initialValues | null>(null);
 
-  // ✅ handleRegistration (same logic as BasicForm)
-  const handleRegistration = async (values: typeof initialValues) => {
+  // ✅ Fetch existing education/job data
+  const fetchEducationDetails = async () => {
     try {
-      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const userString = await AsyncStorage.getItem("user");
-      if (!token || !userString) {
-        Alert.alert("Error", "No token or user found. Please login again.");
+      const user = userString ? JSON.parse(userString) : null;
+
+      if (!user?.id) {
+        Alert.alert("Error", "User not found. Please login first.");
+        setLoading(false);
         return;
       }
 
-      const user = JSON.parse(userString);
-      const userId = user?._id;
+      const response = await fetch(`${API_URL}/user/${user.id}/education`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
 
-      console.log("User ID:", userId);
-      console.log("Education & Job Data:", values);
+      const data = await response.json();
+      const userEdu = data.educationDetails || {};
 
-      // 👉 send to backend (adjust your backend route)
-      const response = await axios.put(
-        `https://your-api-url.com/api/users/${userId}/updateJobEducation`,
-        values,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.status === 200) {
-        Alert.alert("Success", "Job & Education details updated successfully!");
-      } else {
-        Alert.alert("Error", "Something went wrong, please try again.");
-      }
-    } catch (err: any) {
-      console.error("Error updating job/education:", err);
-      Alert.alert("Error", "Server error, please try later.");
+      setInitialData({
+        higherEducation: userEdu.higherEducation || "",
+        jobTitle: userEdu.jobTitle || "",
+        monthlySalary: userEdu.monthlySalary?.toString() || "",
+        jobTown: userEdu.jobTown || "",
+      });
+    } catch (err) {
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Save updated education/job data
+  const handleRegistration = async (values: typeof initialValues) => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+
+      if (!token || !user?.id) {
+        Alert.alert("Error", "No user or token found. Please log in first.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/user/${user.id}/education`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to save Education & Job data");
+        return;
+      }
+
+      Alert.alert("Success", "Education & Job details saved successfully!");
+    } catch (err) {
+      console.error("Error updating job/education:", err);
+      Alert.alert("Error", "Something went wrong (Server or Network Error)");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEducationDetails();
+  }, []);
+
+  if (loading || !initialData) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Formik
-          initialValues={initialValues}
+          enableReinitialize
+          initialValues={initialData}
           validationSchema={validationSchema}
-          onSubmit={handleRegistration}
+          onSubmit={(values) => handleRegistration(values)}
         >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            values,
-            errors,
-            touched,
-            isValid,
-            dirty,
-            setFieldValue,
-          }) => (
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, isValid, dirty }) => (
             <View>
               <Dropdown
                 label="Higher Education"
@@ -162,7 +204,6 @@ export default function JobEducationForm() {
 
               <FormTextInput
                 label="Monthly Salary"
-                placeholder="Enter monthly salary"
                 value={values.monthlySalary}
                 onChangeText={handleChange("monthlySalary")}
                 onBlur={handleBlur("monthlySalary")}
@@ -181,15 +222,11 @@ export default function JobEducationForm() {
               />
 
               <TouchableOpacity
-                style={[styles.button, (!isValid || !dirty) && styles.buttonDisabled]}
+                style={[styles.button, (!isValid || !dirty || loading) && styles.buttonDisabled]}
                 onPress={() => handleSubmit()}
                 disabled={!isValid || !dirty || loading}
               >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Save</Text>
-                )}
+                <Text style={styles.buttonText}>{loading ? "Saving..." : "Save"}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -198,6 +235,7 @@ export default function JobEducationForm() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   safeArea: {

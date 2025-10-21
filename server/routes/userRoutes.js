@@ -5,15 +5,24 @@ const upload = require("../middleware/uploadMiddleware"); // multer instance
 const authMiddleware = require("../middleware/authMiddleware");
 const verifyOwnership = require("../middleware/verifyOwnership");
 
-// Get user profile
 router.get('/:id', authMiddleware, verifyOwnership, userController.getUserProfile);
 
-// Update profile sections
+router.get('/:id/basic', authMiddleware, verifyOwnership, userController.getBasicDetails);
 router.put('/:id/basic', authMiddleware, verifyOwnership, userController.updateBasicDetails);
+
 router.put('/:id/education', authMiddleware, verifyOwnership, userController.updateEducationDetails);
+router.get('/:id/education', authMiddleware, verifyOwnership, userController.getEducationDetails);
+
+
 router.put('/:id/family', authMiddleware, verifyOwnership, userController.updateFamilyDetails);
+router.get('/:id/family', authMiddleware, verifyOwnership, userController.getFamilyDetails);
+
 router.put('/:id/contact', authMiddleware, verifyOwnership, userController.updateContactDetails);
-router.put('/:id/partner-preference', authMiddleware, verifyOwnership, userController.updatePartnerPreferences);
+router.get('/:id/contact', authMiddleware, verifyOwnership, userController.getContactDetails);
+
+router.put('/:id/partnerPreferences', authMiddleware, verifyOwnership, userController.updatePartnerPreferences);
+router.get('/:id/partnerPreferences', authMiddleware, verifyOwnership, userController.getPartnerPreferences);
+
 
 // Upload photos (max 3)
 router.put(

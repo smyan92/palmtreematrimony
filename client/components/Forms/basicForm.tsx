@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,13 @@ import {
   Alert,
   SafeAreaView,
 } from "react-native";
+
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
 import DatePickerInput from "@/components/Forms/DatePicker";
 import Dropdown from "@/components/Forms/Dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 
 const initialValues = {
   fullName: "",
@@ -52,8 +52,7 @@ const validationSchema = Yup.object({
   rasi: Yup.string().required("Rasi is required"),
   star: Yup.string().required("Star is required"),
   skinColor: Yup.string().required("Skin color is required"),
-  height: Yup.string()
-    .required("Height is required"),
+  height: Yup.string().required("Height is required"),
   weight: Yup.string()
     .matches(/^[0-9]+$/, "Weight must be digits only")
     .test("weight-range", "Weight must be between 30kg and 180kg", (val) => {
@@ -80,64 +79,64 @@ const validationSchema = Yup.object({
 
 // Dropdown options
 const homeTownOptions = [
-  { label: 'Chennai', value: 'Chennai' },
-    { label: 'Coimbatore', value: 'Coimbatore' },
-    { label: 'Madurai', value: 'Madurai' },
-    { label: 'Tiruchirappalli', value: 'Tiruchirappalli' },
-    { label: 'Salem', value: 'Salem' },
-    { label: 'Ambattur', value: 'Ambattur' },
-    { label: 'Tirunelveli', value: 'Tirunelveli' },
-    { label: 'Tiruppur', value: 'Tiruppur' },
-    { label: 'Avadi', value: 'Avadi' },
-    { label: 'Tiruvottiyur', value: 'Tiruvottiyur' },
-    { label: 'Thoothukkudi', value: 'Thoothukkudi' },
-    { label: 'Nagercoil', value: 'Nagercoil' },
-    { label: 'Thanjavur', value: 'Thanjavur' },
-    { label: 'Pallavaram', value: 'Pallavaram' },
-    { label: 'Dindigul', value: 'Dindigul' },
-    { label: 'Vellore', value: 'Vellore' },
-    { label: 'Tambaram', value: 'Tambaram' },
-    { label: 'Cuddalore', value: 'Cuddalore' },
-    { label: 'Kancheepuram', value: 'Kancheepuram' },
-    { label: 'Alandur', value: 'Alandur' },
-    { label: 'Erode', value: 'Erode' },
-    { label: 'Tiruvannamalai', value: 'Tiruvannamalai' },
-    { label: 'Kumbakonam', value: 'Kumbakonam' },
-    { label: 'Rajapalayam', value: 'Rajapalayam' },
-    { label: 'Kurichi', value: 'Kurichi' },
-    { label: 'Madavaram', value: 'Madavaram' },
-    { label: 'Pudukkottai', value: 'Pudukkottai' },
-    { label: 'Hosur', value: 'Hosur' },
-    { label: 'Ambur', value: 'Ambur' },
-    { label: 'Karaikkudi', value: 'Karaikkudi' },
-    { label: 'Neyveli', value: 'Neyveli' },
-    { label: 'Nagapattinam', value: 'Nagapattinam' },
-       { label: 'Bengaluru', value: 'Bengaluru' },
-    { label: 'Hyderabad', value: 'Hyderabad' },
-    { label: 'Mumbai', value: 'Mumbai' },
-    { label: 'Delhi', value: 'Delhi' },
-    { label: 'Kolkata', value: 'Kolkata' },
-    { label: 'Pune', value: 'Pune' },
-    { label: 'Jaipur', value: 'Jaipur' },
-    { label: 'Lucknow', value: 'Lucknow' },
-    { label: 'Nagpur', value: 'Nagpur' },
-    { label: 'Visakhapatnam', value: 'Visakhapatnam' },
-    { label: 'Bhubaneswar', value: 'Bhubaneswar' },
-    { label: 'Chandigarh', value: 'Chandigarh' },
-    { label: 'Gurugram', value: 'Gurugram' },
-    { label: 'Noida', value: 'Noida' },
-    { label: 'Kochi', value: 'Kochi' },
-    { label: 'Vijayawada', value: 'Vijayawada' },
+  { label: "Chennai", value: "Chennai" },
+  { label: "Coimbatore", value: "Coimbatore" },
+  { label: "Madurai", value: "Madurai" },
+  { label: "Tiruchirappalli", value: "Tiruchirappalli" },
+  { label: "Salem", value: "Salem" },
+  { label: "Ambattur", value: "Ambattur" },
+  { label: "Tirunelveli", value: "Tirunelveli" },
+  { label: "Tiruppur", value: "Tiruppur" },
+  { label: "Avadi", value: "Avadi" },
+  { label: "Tiruvottiyur", value: "Tiruvottiyur" },
+  { label: "Thoothukkudi", value: "Thoothukkudi" },
+  { label: "Nagercoil", value: "Nagercoil" },
+  { label: "Thanjavur", value: "Thanjavur" },
+  { label: "Pallavaram", value: "Pallavaram" },
+  { label: "Dindigul", value: "Dindigul" },
+  { label: "Vellore", value: "Vellore" },
+  { label: "Tambaram", value: "Tambaram" },
+  { label: "Cuddalore", value: "Cuddalore" },
+  { label: "Kancheepuram", value: "Kancheepuram" },
+  { label: "Alandur", value: "Alandur" },
+  { label: "Erode", value: "Erode" },
+  { label: "Tiruvannamalai", value: "Tiruvannamalai" },
+  { label: "Kumbakonam", value: "Kumbakonam" },
+  { label: "Rajapalayam", value: "Rajapalayam" },
+  { label: "Kurichi", value: "Kurichi" },
+  { label: "Madavaram", value: "Madavaram" },
+  { label: "Pudukkottai", value: "Pudukkottai" },
+  { label: "Hosur", value: "Hosur" },
+  { label: "Ambur", value: "Ambur" },
+  { label: "Karaikkudi", value: "Karaikkudi" },
+  { label: "Neyveli", value: "Neyveli" },
+  { label: "Nagapattinam", value: "Nagapattinam" },
+  { label: "Bengaluru", value: "Bengaluru" },
+  { label: "Hyderabad", value: "Hyderabad" },
+  { label: "Mumbai", value: "Mumbai" },
+  { label: "Delhi", value: "Delhi" },
+  { label: "Kolkata", value: "Kolkata" },
+  { label: "Pune", value: "Pune" },
+  { label: "Jaipur", value: "Jaipur" },
+  { label: "Lucknow", value: "Lucknow" },
+  { label: "Nagpur", value: "Nagpur" },
+  { label: "Visakhapatnam", value: "Visakhapatnam" },
+  { label: "Bhubaneswar", value: "Bhubaneswar" },
+  { label: "Chandigarh", value: "Chandigarh" },
+  { label: "Gurugram", value: "Gurugram" },
+  { label: "Noida", value: "Noida" },
+  { label: "Kochi", value: "Kochi" },
+  { label: "Vijayawada", value: "Vijayawada" },
 ];
 const religionOptions = [
-    { label: "Hindu", value: "Hindu" },
-    { label: "Christian", value: "Christian" },
-    { label: "Muslim", value: "Muslim" },
-    { label: "Jain", value: "Jain" },
-    { label: "Other", value: "Other" },
+  { label: "Hindu", value: "Hindu" },
+  { label: "Christian", value: "Christian" },
+  { label: "Muslim", value: "Muslim" },
+  { label: "Jain", value: "Jain" },
+  { label: "Other", value: "Other" },
 ];
 const subCasteOptions = [
-{ label: "Nadar (General)", value: "Nadar" },
+  { label: "Nadar (General)", value: "Nadar" },
   { label: "Gramani Nadar", value: "Gramani Nadar" },
   { label: "Shanar Nadar", value: "Shanar Nadar" },
   { label: "Santror Nadar", value: "Santror Nadar" },
@@ -155,7 +154,10 @@ const subCasteOptions = [
   { label: "Protestant Nadar", value: "Protestant Nadar" },
   { label: "CSI Nadar", value: "CSI Nadar" },
   { label: "Pentecostal Nadar", value: "Pentecostal Nadar" },
-  { label: "Seventh Day Adventist Nadar", value: "Seventh Day Adventist Nadar" },
+  {
+    label: "Seventh Day Adventist Nadar",
+    value: "Seventh Day Adventist Nadar",
+  },
   { label: "Evangelical Nadar", value: "Evangelical Nadar" },
   { label: "Independent Church Nadar", value: "Independent Church Nadar" },
 
@@ -163,53 +165,53 @@ const subCasteOptions = [
   { label: "Other Nadar", value: "Other Nadar" },
 ];
 const rasiOptions = [
- { label: "Mesham (Aries)", value: "Mesham" },
-    { label: "Rishabam (Taurus)", value: "Rishabam" },
-    { label: "Mithunam (Gemini)", value: "Mithunam" },
-    { label: "Katakam (Cancer)", value: "Katakam" },
-    { label: "Simmam (Leo)", value: "Simmam" },
-    { label: "Kanni (Virgo)", value: "Kanni" },
-    { label: "Thulam (Libra)", value: "Thulam" },
-    { label: "Viruchigam (Scorpio)", value: "Viruchigam" },
-    { label: "Dhanusu (Sagittarius)", value: "Dhanusu" },
-    { label: "Makaram (Capricorn)", value: "Makaram" },
-    { label: "Kumbam (Aquarius)", value: "Kumbam" },
-    { label: "Meenam (Pisces)", value: "Meenam" },
+  { label: "Mesham (Aries)", value: "Mesham" },
+  { label: "Rishabam (Taurus)", value: "Rishabam" },
+  { label: "Mithunam (Gemini)", value: "Mithunam" },
+  { label: "Katakam (Cancer)", value: "Katakam" },
+  { label: "Simmam (Leo)", value: "Simmam" },
+  { label: "Kanni (Virgo)", value: "Kanni" },
+  { label: "Thulam (Libra)", value: "Thulam" },
+  { label: "Viruchigam (Scorpio)", value: "Viruchigam" },
+  { label: "Dhanusu (Sagittarius)", value: "Dhanusu" },
+  { label: "Makaram (Capricorn)", value: "Makaram" },
+  { label: "Kumbam (Aquarius)", value: "Kumbam" },
+  { label: "Meenam (Pisces)", value: "Meenam" },
 ];
 const starOptions = [
   { label: "Ashwini", value: "Ashwini" },
-    { label: "Bharani", value: "Bharani" },
-    { label: "Karthigai", value: "Karthigai" },
-    { label: "Rohini", value: "Rohini" },
-    { label: "Mirugasirisham", value: "Mirugasirisham" },
-    { label: "Thiruvathirai", value: "Thiruvathirai" },
-    { label: "Punarpoosam", value: "Punarpoosam" },
-    { label: "Poosam", value: "Poosam" },
-    { label: "Ayilyam", value: "Ayilyam" },
-    { label: "Magam", value: "Magam" },
-    { label: "Pooram", value: "Pooram" },
-    { label: "Uthiram", value: "Uthiram" },
-    { label: "Hastham", value: "Hastham" },
-    { label: "Chithirai", value: "Chithirai" },
-    { label: "Swathi", value: "Swathi" },
-    { label: "Visakam", value: "Visakam" },
-    { label: "Anusham", value: "Anusham" },
-    { label: "Kettai", value: "Kettai" },
-    { label: "Moolam", value: "Moolam" },
-    { label: "Pooradam", value: "Pooradam" },
-    { label: "Uthiradam", value: "Uthiradam" },
-    { label: "Thiruvonam", value: "Thiruvonam" },
-    { label: "Avittam", value: "Avittam" },
-    { label: "Sathayam", value: "Sathayam" },
-    { label: "Poorattathi", value: "Poorattathi" },
-    { label: "Uthirattathi", value: "Uthirattathi" },
-    { label: "Revathi", value: "Revathi" },
+  { label: "Bharani", value: "Bharani" },
+  { label: "Karthigai", value: "Karthigai" },
+  { label: "Rohini", value: "Rohini" },
+  { label: "Mirugasirisham", value: "Mirugasirisham" },
+  { label: "Thiruvathirai", value: "Thiruvathirai" },
+  { label: "Punarpoosam", value: "Punarpoosam" },
+  { label: "Poosam", value: "Poosam" },
+  { label: "Ayilyam", value: "Ayilyam" },
+  { label: "Magam", value: "Magam" },
+  { label: "Pooram", value: "Pooram" },
+  { label: "Uthiram", value: "Uthiram" },
+  { label: "Hastham", value: "Hastham" },
+  { label: "Chithirai", value: "Chithirai" },
+  { label: "Swathi", value: "Swathi" },
+  { label: "Visakam", value: "Visakam" },
+  { label: "Anusham", value: "Anusham" },
+  { label: "Kettai", value: "Kettai" },
+  { label: "Moolam", value: "Moolam" },
+  { label: "Pooradam", value: "Pooradam" },
+  { label: "Uthiradam", value: "Uthiradam" },
+  { label: "Thiruvonam", value: "Thiruvonam" },
+  { label: "Avittam", value: "Avittam" },
+  { label: "Sathayam", value: "Sathayam" },
+  { label: "Poorattathi", value: "Poorattathi" },
+  { label: "Uthirattathi", value: "Uthirattathi" },
+  { label: "Revathi", value: "Revathi" },
 ];
 const skinColorOptions = [
-   { label: "Very Fair", value: "Very Fair" },
-    { label: "Fair", value: "Fair" },
-    { label: "Wheatish", value: "Wheatish" },
-    { label: "Dark", value: "Dark" },
+  { label: "Very Fair", value: "Very Fair" },
+  { label: "Fair", value: "Fair" },
+  { label: "Wheatish", value: "Wheatish" },
+  { label: "Dark", value: "Dark" },
 ];
 const heightOptions = [
   { label: "2' 0\"", value: "2' 0\"" },
@@ -243,14 +245,13 @@ const heightOptions = [
   { label: "8' 11\"", value: "8' 11\"" },
 ];
 
-
 const foodHabitOptions = [
-    { label: "Vegetarian", value: "Veg" },
-    { label: "Non-Vegetarian", value: "Non-Veg" },
-    { label: "Eggetarian", value: "Egg" },
+  { label: "Vegetarian", value: "Veg" },
+  { label: "Non-Vegetarian", value: "Non-Veg" },
+  { label: "Eggetarian", value: "Egg" },
 ];
 const motherTongueOptions = [
- { label: "Tamil", value: "Tamil" },
+  { label: "Tamil", value: "Tamil" },
   { label: "Telugu", value: "Telugu" },
   { label: "Malayalam", value: "Malayalam" },
   { label: "Kannada", value: "Kannada" },
@@ -262,17 +263,17 @@ const motherTongueOptions = [
   { label: "Punjabi", value: "Punjabi" },
 
   // Neighboring countries
-  { label: "Sinhala", value: "Sinhala" },     // Sri Lanka
+  { label: "Sinhala", value: "Sinhala" }, // Sri Lanka
   { label: "English (Sri Lankan)", value: "English (Sri Lankan)" },
 
   // Worldwide migration (common languages spoken by diaspora Nadars)
   { label: "English", value: "English" },
-  { label: "French", value: "French" },       // France, Canada
-  { label: "German", value: "German" },       // Germany
-  { label: "Dutch", value: "Dutch" },         // Netherlands
-  { label: "Spanish", value: "Spanish" },     // Spain, Latin America, US
-  { label: "Arabic", value: "Arabic" },       // Middle East (UAE, Saudi, Qatar, etc.)
-  { label: "Malay", value: "Malay" },         // Malaysia, Singapore
+  { label: "French", value: "French" }, // France, Canada
+  { label: "German", value: "German" }, // Germany
+  { label: "Dutch", value: "Dutch" }, // Netherlands
+  { label: "Spanish", value: "Spanish" }, // Spain, Latin America, US
+  { label: "Arabic", value: "Arabic" }, // Middle East (UAE, Saudi, Qatar, etc.)
+  { label: "Malay", value: "Malay" }, // Malaysia, Singapore
   { label: "Chinese (Mandarin)", value: "Chinese (Mandarin)" },
   { label: "Chinese (Cantonese)", value: "Chinese (Cantonese)" },
   { label: "Thai", value: "Thai" },
@@ -288,62 +289,118 @@ const physicalChallengeOptions = [
   { label: "Partially", value: "partial" },
 ];
 
-
-
 export default function App() {
-const API_URL =  'http://192.168.43.38:5000';
+  const API_URL = "http://192.168.43.38:5000";
+  const [initialData, setInitialData] = useState(initialValues);
+  const [loading, setLoading] = useState(true);
 
 
-const handleRegistration = async (values: typeof initialValues) => {
+
+  const fetchBasicDetails = async () => {
   try {
-    // Get user ID and token from AsyncStorage
     const token = await AsyncStorage.getItem("token");
     const userString = await AsyncStorage.getItem("user");
     const user = userString ? JSON.parse(userString) : null;
 
-    if (!user) {
-      Alert.alert("Error", "No user found. Please login first.");
+    if (!user || !user.id) {
+      Alert.alert("Error", "User not found. Please login first.");
+      setLoading(false);
       return;
     }
 
-    const userId = user.id; // get ID from stored user
-
-    // Make PUT request with user ID in URL
-    const response = await fetch(`${API_URL}/user/${userId}/basic`, {
-      method: "PUT",
-      headers: { 
+    const response = await fetch(`${API_URL}/user/${user.id}/basic`, {
+      headers: {
         "Content-Type": "application/json",
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(values),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      Alert.alert("Error", data.message || "Failed to save data");
+      console.log("GET Error:", data.message);
+      setLoading(false);
       return;
     }
 
-    Alert.alert("Success", "Profile saved successfully!");
-    console.log("Saved Data:", data);
+    // ✅ Use `data.basicDetails` from your API response
+    const userBasic = data.basicDetails;
+
+    if (userBasic && Object.keys(userBasic).length > 0) {
+      const parsedData = {
+        ...initialValues,
+        ...userBasic,
+        dob: userBasic.dob ? new Date(userBasic.dob) : null, // convert date string
+      };
+      setInitialData(parsedData);
+      console.log("✅ Loaded Basic Details:", parsedData);
+    } else {
+      console.log("ℹ️ No basic details found — showing empty form");
+      setInitialData(initialValues);
+    }
   } catch (err) {
-    console.error(err);
-    Alert.alert("Error", "Something went wrong");
+    console.error("❌ Fetch error:", err);
+  } finally {
+    setLoading(false);
   }
 };
 
+
+  // ✅ Fetch user basic info on mount
+  useEffect(() => {
+
+    fetchBasicDetails();
+  }, []);
+
+  const handleRegistration = async (values: typeof initialValues) => {
+    try {
+      // Get user ID and token from AsyncStorage
+      const token = await AsyncStorage.getItem("token");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+
+      if (!user) {
+        Alert.alert("Error", "No user found. Please login first.");
+        return;
+      }
+
+      const userId = user.id; // get ID from stored user
+
+      // Make PUT request with user ID in URL
+      const response = await fetch(`${API_URL}/user/${userId}/basic`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to save data");
+        return;
+      }
+
+      Alert.alert("Success", "Profile saved successfully!");
+      console.log("Saved Data:", data);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Something went wrong");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Formik
-          initialValues={initialValues}
+          enableReinitialize
+          initialValues={initialData}
           validationSchema={validationSchema}
           onSubmit={handleRegistration}
-          validateOnChange={true}
-          validateOnBlur={true}
-          validateOnMount={true}
+          validateOnChange
+          validateOnBlur
         >
           {({
             handleChange,
@@ -431,15 +488,14 @@ const handleRegistration = async (values: typeof initialValues) => {
                 error={errors.skinColor}
                 touched={touched.skinColor}
               />
-<Dropdown
-  label="Height (cm)"
-  value={values.height} // e.g., "165"
-  onValueChange={(val) => setFieldValue("height", val)}
-  options={heightOptions}
-  error={errors.height}
-  touched={touched.height}
-/>
-
+              <Dropdown
+                label="Height (cm)"
+                value={values.height} // e.g., "165"
+                onValueChange={(val) => setFieldValue("height", val)}
+                options={heightOptions}
+                error={errors.height}
+                touched={touched.height}
+              />
 
               <FormTextInput
                 label="Weight (kg)"
@@ -491,48 +547,22 @@ const handleRegistration = async (values: typeof initialValues) => {
               <Dropdown
                 label="Physical Challenge"
                 value={values.physicalChallenge}
-                onValueChange={(val) =>
-                  setFieldValue("physicalChallenge", val)
-                }
+                onValueChange={(val) => setFieldValue("physicalChallenge", val)}
                 options={physicalChallengeOptions}
                 error={errors.physicalChallenge}
                 touched={touched.physicalChallenge}
               />
 
-              {/* Fill Test Data Button */}
-      <TouchableOpacity
-  style={styles.fillButton}
-  onPress={() => {
-    setFieldValue("fullName", "John Doe");
-    setFieldValue("dob", new Date("1990-01-01"));
-    setFieldValue("homeTown", "Madurai");
-    setFieldValue("religion", "Hindu");
-    setFieldValue("subCaste", "Nadar");
-    setFieldValue("rasi", "Mesham");
-    setFieldValue("star", "Ashwini");
-    setFieldValue("skinColor", "Fair");
-setFieldValue("height", "5' 6\"");
-    setFieldValue("weight", "70");
-    setFieldValue("foodHabit", "Veg");
-    setFieldValue("motherTongue", "Tamil");
-    setFieldValue("chevaiDosham", "no");
-    setFieldValue("goldWeight", "100");
-    setFieldValue("physicalChallenge", "no");
-  }}
->
-  <Text style={{ color: "#fff", fontWeight: "600" }}>Fill Test Data</Text>
-</TouchableOpacity>
 
 
               {/* Save Button */}
-        <TouchableOpacity
-  style={[styles.button, !isValid && styles.buttonDisabled]}
-  onPress={() => handleSubmit()} // ✅ wrap in arrow function
-  disabled={!isValid}
->
-  <Text style={styles.buttonText}>Save</Text>
-</TouchableOpacity>
-
+              <TouchableOpacity
+                style={[styles.button, !isValid && styles.buttonDisabled]}
+                onPress={() => handleSubmit()} // ✅ wrap in arrow function
+                disabled={!isValid}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
             </View>
           )}
         </Formik>
@@ -540,8 +570,6 @@ setFieldValue("height", "5' 6\"");
     </SafeAreaView>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#f5f7fa" },

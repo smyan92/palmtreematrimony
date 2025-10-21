@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 import {
   View,
   Text,
@@ -6,15 +7,18 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormTextInput from "@/components/Forms/TextInput";
 import Dropdown from "@/components/Forms/Dropdown";
 import MultiDropdown from "@/components/Forms/MultiDropdown";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// Define initial values for the form fields
 const initialValues = {
-  partnerName: "",
   partnerAgeFrom: "",
   partnerAgeTo: "",
   partnerMaritalStatus: "",
@@ -34,15 +38,18 @@ const initialValues = {
   partnerStarMulti: [] as string[],
   partnerRasiMulti: [] as string[],
 };
+type partnertDetails = typeof initialValues;
 
+// Form validation schema
 const validationSchema = Yup.object({
-  partnerName: Yup.string().required("Partner name is required"),
   partnerAgeFrom: Yup.number()
     .typeError("Age From must be a number")
-    .required("Age From is required"),
+    .required("Age From is required")
+    .positive("Age must be positive"),
   partnerAgeTo: Yup.number()
     .typeError("Age To must be a number")
     .required("Age To is required")
+    .positive("Age must be positive")
     .min(Yup.ref("partnerAgeFrom"), "Age To must be greater than Age From"),
   partnerMaritalStatus: Yup.string().required("Select marital status"),
   partnerHometown: Yup.string().required("Select hometown"),
@@ -62,7 +69,10 @@ const validationSchema = Yup.object({
   partnerRasiMulti: Yup.array().min(1, "Select at least 1 rasi"),
 });
 
-// Sample options
+// Mock API URL (replace with actual if needed)
+const API_URL = "http://192.168.43.38:5000";
+
+// Sample options (kept as is)
 const maritalStatusOptions = [
   { label: "Single", value: "single" },
   { label: "Divorced", value: "divorced" },
@@ -75,7 +85,7 @@ const religionOptions = [
 ];
 
 const subcasteOptions = [
- // Hindu Nadar Subcastes
+  // Hindu Nadar Subcastes
   { label: "Nadar (General)", value: "Nadar" },
   { label: "Gramani Nadar", value: "Gramani Nadar" },
   { label: "Shanar Nadar", value: "Shanar Nadar" },
@@ -103,7 +113,7 @@ const subcasteOptions = [
 ];
 
 const educationOptions = [
- { "label": "Ph.D. / Doctoral Degree", "value": "PhD" },
+  { "label": "Ph.D. / Doctoral Degree", "value": "PhD" },
   { "label": "M.Tech (Master of Technology)", "value": "MTech" },
   { "label": "M.E. (Master of Engineering)", "value": "ME" },
   { "label": "M.C.A. (Master of Computer Applications)", "value": "MCA" },
@@ -123,7 +133,7 @@ const educationOptions = [
 ];
 
 const jobOptions = [
-   { label: 'Software Engineer', value: 'Software Engineer' },
+  { label: 'Software Engineer', value: 'Software Engineer' },
   { label: 'Web Developer', value: 'Web Developer' },
   { label: 'Mobile App Developer', value: 'Mobile App Developer' },
   { label: 'Data Scientist', value: 'Data Scientist' },
@@ -158,83 +168,83 @@ const jobOptions = [
 
 const starOptions = [
   { label: "Ashwini", value: "Ashwini" },
-    { label: "Bharani", value: "Bharani" },
-    { label: "Karthigai", value: "Karthigai" },
-    { label: "Rohini", value: "Rohini" },
-    { label: "Mirugasirisham", value: "Mirugasirisham" },
-    { label: "Thiruvathirai", value: "Thiruvathirai" },
-    { label: "Punarpoosam", value: "Punarpoosam" },
-    { label: "Poosam", value: "Poosam" },
-    { label: "Ayilyam", value: "Ayilyam" },
-    { label: "Magam", value: "Magam" },
-    { label: "Pooram", value: "Pooram" },
-    { label: "Uthiram", value: "Uthiram" },
-    { label: "Hastham", value: "Hastham" },
-    { label: "Chithirai", value: "Chithirai" },
-    { label: "Swathi", value: "Swathi" },
-    { label: "Visakam", value: "Visakam" },
-    { label: "Anusham", value: "Anusham" },
-    { label: "Kettai", value: "Kettai" },
-    { label: "Moolam", value: "Moolam" },
-    { label: "Pooradam", value: "Pooradam" },
-    { label: "Uthiradam", value: "Uthiradam" },
-    { label: "Thiruvonam", value: "Thiruvonam" },
-    { label: "Avittam", value: "Avittam" },
-    { label: "Sathayam", value: "Sathayam" },
-    { label: "Poorattathi", value: "Poorattathi" },
-    { label: "Uthirattathi", value: "Uthirattathi" },
-    { label: "Revathi", value: "Revathi" },
+  { label: "Bharani", value: "Bharani" },
+  { label: "Karthigai", value: "Karthigai" },
+  { label: "Rohini", value: "Rohini" },
+  { label: "Mirugasirisham", value: "Mirugasirisham" },
+  { label: "Thiruvathirai", value: "Thiruvathirai" },
+  { label: "Punarpoosam", value: "Punarpoosam" },
+  { label: "Poosam", value: "Poosam" },
+  { label: "Ayilyam", value: "Ayilyam" },
+  { label: "Magam", value: "Magam" },
+  { label: "Pooram", value: "Pooram" },
+  { label: "Uthiram", value: "Uthiram" },
+  { label: "Hastham", value: "Hastham" },
+  { label: "Chithirai", value: "Chithirai" },
+  { label: "Swathi", value: "Swathi" },
+  { label: "Visakam", value: "Visakam" },
+  { label: "Anusham", value: "Anusham" },
+  { label: "Kettai", value: "Kettai" },
+  { label: "Moolam", value: "Moolam" },
+  { label: "Pooradam", value: "Pooradam" },
+  { label: "Uthiradam", value: "Uthiradam" },
+  { label: "Thiruvonam", value: "Thiruvonam" },
+  { label: "Avittam", value: "Avittam" },
+  { label: "Sathayam", value: "Sathayam" },
+  { label: "Poorattathi", value: "Poorattathi" },
+  { label: "Uthirattathi", value: "Uthirattathi" },
+  { label: "Revathi", value: "Revathi" },
 ];
 
 const hometownOptions = [
   { label: 'Chennai', value: 'Chennai' },
-    { label: 'Coimbatore', value: 'Coimbatore' },
-    { label: 'Madurai', value: 'Madurai' },
-    { label: 'Tiruchirappalli', value: 'Tiruchirappalli' },
-    { label: 'Salem', value: 'Salem' },
-    { label: 'Ambattur', value: 'Ambattur' },
-    { label: 'Tirunelveli', value: 'Tirunelveli' },
-    { label: 'Tiruppur', value: 'Tiruppur' },
-    { label: 'Avadi', value: 'Avadi' },
-    { label: 'Tiruvottiyur', value: 'Tiruvottiyur' },
-    { label: 'Thoothukkudi', value: 'Thoothukkudi' },
-    { label: 'Nagercoil', value: 'Nagercoil' },
-    { label: 'Thanjavur', value: 'Thanjavur' },
-    { label: 'Pallavaram', value: 'Pallavaram' },
-    { label: 'Dindigul', value: 'Dindigul' },
-    { label: 'Vellore', value: 'Vellore' },
-    { label: 'Tambaram', value: 'Tambaram' },
-    { label: 'Cuddalore', value: 'Cuddalore' },
-    { label: 'Kancheepuram', value: 'Kancheepuram' },
-    { label: 'Alandur', value: 'Alandur' },
-    { label: 'Erode', value: 'Erode' },
-    { label: 'Tiruvannamalai', value: 'Tiruvannamalai' },
-    { label: 'Kumbakonam', value: 'Kumbakonam' },
-    { label: 'Rajapalayam', value: 'Rajapalayam' },
-    { label: 'Kurichi', value: 'Kurichi' },
-    { label: 'Madavaram', value: 'Madavaram' },
-    { label: 'Pudukkottai', value: 'Pudukkottai' },
-    { label: 'Hosur', value: 'Hosur' },
-    { label: 'Ambur', value: 'Ambur' },
-    { label: 'Karaikkudi', value: 'Karaikkudi' },
-    { label: 'Neyveli', value: 'Neyveli' },
-    { label: 'Nagapattinam', value: 'Nagapattinam' },
-       { label: 'Bengaluru', value: 'Bengaluru' },
-    { label: 'Hyderabad', value: 'Hyderabad' },
-    { label: 'Mumbai', value: 'Mumbai' },
-    { label: 'Delhi', value: 'Delhi' },
-    { label: 'Kolkata', value: 'Kolkata' },
-    { label: 'Pune', value: 'Pune' },
-    { label: 'Jaipur', value: 'Jaipur' },
-    { label: 'Lucknow', value: 'Lucknow' },
-    { label: 'Nagpur', value: 'Nagpur' },
-    { label: 'Visakhapatnam', value: 'Visakhapatnam' },
-    { label: 'Bhubaneswar', value: 'Bhubaneswar' },
-    { label: 'Chandigarh', value: 'Chandigarh' },
-    { label: 'Gurugram', value: 'Gurugram' },
-    { label: 'Noida', value: 'Noida' },
-    { label: 'Kochi', value: 'Kochi' },
-    { label: 'Vijayawada', value: 'Vijayawada' },
+  { label: 'Coimbatore', value: 'Coimbatore' },
+  { label: 'Madurai', value: 'Madurai' },
+  { label: 'Tiruchirappalli', value: 'Tiruchirappalli' },
+  { label: 'Salem', value: 'Salem' },
+  { label: 'Ambattur', value: 'Ambattur' },
+  { label: 'Tirunelveli', value: 'Tirunelveli' },
+  { label: 'Tiruppur', value: 'Tiruppur' },
+  { label: 'Avadi', value: 'Avadi' },
+  { label: 'Tiruvottiyur', value: 'Tiruvottiyur' },
+  { label: 'Thoothukkudi', value: 'Thoothukkudi' },
+  { label: 'Nagercoil', value: 'Nagercoil' },
+  { label: 'Thanjavur', value: 'Thanjavur' },
+  { label: 'Pallavaram', value: 'Pallavaram' },
+  { label: 'Dindigul', value: 'Dindigul' },
+  { label: 'Vellore', value: 'Vellore' },
+  { label: 'Tambaram', value: 'Tambaram' },
+  { label: 'Cuddalore', value: 'Cuddalore' },
+  { label: 'Kancheepuram', value: 'Kancheepuram' },
+  { label: 'Alandur', value: 'Alandur' },
+  { label: 'Erode', value: 'Erode' },
+  { label: 'Tiruvannamalai', value: 'Tiruvannamalai' },
+  { label: 'Kumbakonam', value: 'Kumbakonam' },
+  { label: 'Rajapalayam', value: 'Rajapalayam' },
+  { label: 'Kurichi', value: 'Kurichi' },
+  { label: 'Madavaram', value: 'Madavaram' },
+  { label: 'Pudukkottai', value: 'Pudukkottai' },
+  { label: 'Hosur', value: 'Hosur' },
+  { label: 'Ambur', value: 'Ambur' },
+  { label: 'Karaikkudi', value: 'Karaikkudi' },
+  { label: 'Neyveli', value: 'Neyveli' },
+  { label: 'Nagapattinam', value: 'Nagapattinam' },
+  { label: 'Bengaluru', value: 'Bengaluru' },
+  { label: 'Hyderabad', value: 'Hyderabad' },
+  { label: 'Mumbai', value: 'Mumbai' },
+  { label: 'Delhi', value: 'Delhi' },
+  { label: 'Kolkata', value: 'Kolkata' },
+  { label: 'Pune', value: 'Pune' },
+  { label: 'Jaipur', value: 'Jaipur' },
+  { label: 'Lucknow', value: 'Lucknow' },
+  { label: 'Nagpur', value: 'Nagpur' },
+  { label: 'Visakhapatnam', value: 'Visakhapatnam' },
+  { label: 'Bhubaneswar', value: 'Bhubaneswar' },
+  { label: 'Chandigarh', value: 'Chandigarh' },
+  { label: 'Gurugram', value: 'Gurugram' },
+  { label: 'Noida', value: 'Noida' },
+  { label: 'Kochi', value: 'Kochi' },
+  { label: 'Vijayawada', value: 'Vijayawada' },
 ];
 
 const chevaiOptions = [
@@ -257,19 +267,145 @@ const skinColorOptions = [
   { label: "Wheatish", value: "wheatish" },
 ];
 
+// Rasi options are usually the same as Star options in this context
+const rasiOptions = starOptions;
+
 export default function PartnerPreferenceForm() {
-  const handleRegistration = (values: typeof initialValues) => {
-    console.log("Form Submitted:", values);
-    alert("Form submitted successfully!");
+  const [loading, setLoading] = useState(true);
+  const [initialData, setInitialData] = useState<partnertDetails>(initialValues);
+
+  /**
+   * Fetches the user's existing partner preferences from the API.
+   */
+  const fetchPartnerPreferences = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      const userId = user?.id;
+
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/user/${userId}/partnerPreferences`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        // If the resource doesn't exist (e.g., first time), it's fine.
+        // We will default to initialValues.
+        if (res.status !== 404) {
+             throw new Error(`Failed to fetch: ${res.statusText}`);
+        }
+        setInitialData(initialValues);
+        return;
+      }
+      
+      const data = await res.json();
+      const preferences = data.partnerPreferences || {}; // Assume the preferences are in a key called partnerPreferences
+      
+      // FIX: Map the fetched data to the initialValues structure,
+      // ensuring arrays are not null/undefined and using empty strings as fallbacks
+      setInitialData({
+        partnerAgeFrom: (preferences.partnerAgeFrom ?? initialValues.partnerAgeFrom).toString(),
+        partnerAgeTo: (preferences.partnerAgeTo ?? initialValues.partnerAgeTo).toString(),
+        partnerMaritalStatus: preferences.partnerMaritalStatus || initialValues.partnerMaritalStatus,
+        partnerHometown: preferences.partnerHometown || initialValues.partnerHometown,
+        partnerJobTown: preferences.partnerJobTown || initialValues.partnerJobTown,
+        partnerReligion: preferences.partnerReligion || initialValues.partnerReligion,
+        partnerSubcaste: preferences.partnerSubcaste || initialValues.partnerSubcaste,
+        partnerEducation: preferences.partnerEducation || initialValues.partnerEducation,
+        partnerJob: preferences.partnerJob || initialValues.partnerJob,
+        partnerSalary: preferences.partnerSalary || initialValues.partnerSalary,
+        partnerHometownMulti: preferences.partnerHometownMulti || initialValues.partnerHometownMulti,
+        partnerChevai: preferences.partnerChevai || initialValues.partnerChevai,
+        partnerPhysicalChallenge: preferences.partnerPhysicalChallenge || initialValues.partnerPhysicalChallenge,
+        partnerHouseType: preferences.partnerHouseType || initialValues.partnerHouseType,
+        partnerGold: (preferences.partnerGold ?? initialValues.partnerGold).toString(),
+        partnerSkinColor: preferences.partnerSkinColor || initialValues.partnerSkinColor,
+        partnerStarMulti: preferences.partnerStarMulti || initialValues.partnerStarMulti,
+        partnerRasiMulti: preferences.partnerRasiMulti || initialValues.partnerRasiMulti,
+      });
+
+    } catch (err) {
+      console.error("Fetch Partner Preferences Error:", err);
+      Alert.alert("Error", "Failed to load partner preferences");
+      // Fallback: Use initial empty values
+      setInitialData(initialValues);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchPartnerPreferences();
+  }, []);
+
+  /**
+   * Submits the form data to update partner preferences.
+   * @param values The form values from Formik.
+   */
+  const handleSavePreferences = async (values: typeof initialValues) => {
+    // Convert age and gold fields to numbers for API, handling the case where Yup made them strings
+Alert.alert("hii");
+
+    const valuesForAPI = {
+        ...values,
+        partnerAgeFrom: parseInt(values.partnerAgeFrom, 10),
+        partnerAgeTo: parseInt(values.partnerAgeTo, 10),
+        partnerGold: parseFloat(values.partnerGold),
+    };
+     const token = await AsyncStorage.getItem("token");
+      const userString = await AsyncStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+      const userId = user?.id;
+  if (!token || !userId) {
+        Alert.alert("Error", "Authentication failed. Please log in again.");
+        return;
+      }
+
+console.log(JSON.stringify(valuesForAPI));
+  const response = await fetch(`${API_URL}/user/${userId}/partnerPreferences`, {
+        method: "PUT", // Use PUT for update
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(valuesForAPI),
+      });
+
+      const data = await response.json();
+     Alert.alert("Response", JSON.stringify(data));
+
+
+  };
+  
+  // Display a loading indicator while fetching initial data
+  if (loading) {
+      return (
+          <SafeAreaView style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007bff" />
+              <Text style={{ marginTop: 10 }}>Loading Preferences...</Text>
+          </SafeAreaView>
+      );
+  }
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Formik
-          initialValues={initialValues}
+          // Use the fetched initialData
+          initialValues={initialData}
           validationSchema={validationSchema}
-          onSubmit={handleRegistration}
+          onSubmit={handleSavePreferences} // Updated function name
+          enableReinitialize={true} // Important to update form when initialData changes
         >
           {({
             handleChange,
@@ -283,36 +419,36 @@ export default function PartnerPreferenceForm() {
             setFieldValue,
           }) => (
             <View>
-              <FormTextInput
-                label="Partner Name"
-                value={values.partnerName}
-                onChangeText={handleChange("partnerName")}
-                onBlur={handleBlur("partnerName")}
-                error={errors.partnerName as string}
-                touched={!!touched.partnerName}
-              />
+              {/* Partner Name */}
+        
 
+              {/* Age From/To */}
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <FormTextInput
-                  label="Age From"
-                  value={values.partnerAgeFrom}
-                  onChangeText={handleChange("partnerAgeFrom")}
-                  onBlur={handleBlur("partnerAgeFrom")}
-                  error={errors.partnerAgeFrom as string}
-                  touched={!!touched.partnerAgeFrom}
-                  keyboardType="numeric"
-                />
-                <FormTextInput
-                  label="Age To"
-                  value={values.partnerAgeTo}
-                  onChangeText={handleChange("partnerAgeTo")}
-                  onBlur={handleBlur("partnerAgeTo")}
-                  error={errors.partnerAgeTo as string}
-                  touched={!!touched.partnerAgeTo}
-                  keyboardType="numeric"
-                />
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <FormTextInput
+                    label="Age From"
+                    value={values.partnerAgeFrom}
+                    onChangeText={handleChange("partnerAgeFrom")}
+                    onBlur={handleBlur("partnerAgeFrom")}
+                    error={errors.partnerAgeFrom as string}
+                    touched={!!touched.partnerAgeFrom}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <FormTextInput
+                    label="Age To"
+                    value={values.partnerAgeTo}
+                    onChangeText={handleChange("partnerAgeTo")}
+                    onBlur={handleBlur("partnerAgeTo")}
+                    error={errors.partnerAgeTo as string}
+                    touched={!!touched.partnerAgeTo}
+                    keyboardType="numeric"
+                  />
+                </View>
               </View>
 
+              {/* Marital Status */}
               <Dropdown
                 label="Marital Status"
                 value={values.partnerMaritalStatus}
@@ -322,8 +458,9 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerMaritalStatus}
               />
 
+              {/* Hometown (Single Select) */}
               <Dropdown
-                label="Hometown"
+                label="Hometown (Single Select)"
                 value={values.partnerHometown}
                 onValueChange={(val) => setFieldValue("partnerHometown", val)}
                 options={hometownOptions}
@@ -331,15 +468,17 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerHometown}
               />
 
+              {/* Job Town (Multi Select) */}
               <MultiDropdown
-                label="Job Town"
+                label="Job Town (Multi Select)"
                 selectedValues={values.partnerJobTown}
                 onValuesChange={(val) => setFieldValue("partnerJobTown", val)}
                 options={hometownOptions}
-                error={errors.partnerJobTown as string[]}
+                error={errors.partnerJobTown as string[] | undefined}
                 touched={!!touched.partnerJobTown}
               />
 
+              {/* Religion */}
               <Dropdown
                 label="Religion"
                 value={values.partnerReligion}
@@ -349,6 +488,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerReligion}
               />
 
+              {/* Subcaste */}
               <Dropdown
                 label="Subcaste"
                 value={values.partnerSubcaste}
@@ -358,6 +498,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerSubcaste}
               />
 
+              {/* Education */}
               <Dropdown
                 label="Education"
                 value={values.partnerEducation}
@@ -367,6 +508,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerEducation}
               />
 
+              {/* Job */}
               <Dropdown
                 label="Job"
                 value={values.partnerJob}
@@ -376,6 +518,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerJob}
               />
 
+              {/* Salary */}
               <FormTextInput
                 label="Salary"
                 value={values.partnerSalary}
@@ -383,12 +526,13 @@ export default function PartnerPreferenceForm() {
                 onBlur={handleBlur("partnerSalary")}
                 error={errors.partnerSalary as string}
                 touched={!!touched.partnerSalary}
+                keyboardType="numeric"
               />
 
-         
 
+              {/* Hometown Multi (Multi Select) */}
               <MultiDropdown
-                label="Hometown Multi"
+                label="Preferred Hometowns (Multi Select)"
                 selectedValues={values.partnerHometownMulti || []}
                 onValuesChange={(val) => setFieldValue("partnerHometownMulti", val)}
                 options={hometownOptions}
@@ -396,6 +540,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerHometownMulti}
               />
 
+              {/* Chevai/Dhosam */}
               <Dropdown
                 label="Chevai/Dhosam"
                 value={values.partnerChevai}
@@ -405,6 +550,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerChevai}
               />
 
+              {/* Physical Challenge */}
               <Dropdown
                 label="Physical Challenge"
                 value={values.partnerPhysicalChallenge}
@@ -414,6 +560,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerPhysicalChallenge}
               />
 
+              {/* House Type */}
               <Dropdown
                 label="House Type"
                 value={values.partnerHouseType}
@@ -423,6 +570,7 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerHouseType}
               />
 
+              {/* Gold */}
               <FormTextInput
                 label="Gold (in grams)"
                 value={values.partnerGold}
@@ -430,8 +578,10 @@ export default function PartnerPreferenceForm() {
                 onBlur={handleBlur("partnerGold")}
                 error={errors.partnerGold as string}
                 touched={!!touched.partnerGold}
+                keyboardType="numeric"
               />
 
+              {/* Skin Color */}
               <Dropdown
                 label="Skin Color"
                 value={values.partnerSkinColor}
@@ -441,8 +591,9 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerSkinColor}
               />
 
+              {/* Star Multi */}
               <MultiDropdown
-                label="Star Multi"
+                label="Star (Multi Select)"
                 selectedValues={values.partnerStarMulti || []}
                 onValuesChange={(val) => setFieldValue("partnerStarMulti", val)}
                 options={starOptions}
@@ -450,38 +601,46 @@ export default function PartnerPreferenceForm() {
                 touched={!!touched.partnerStarMulti}
               />
 
+              {/* Rasi Multi */}
               <MultiDropdown
-                label="Rasi Multi"
+                label="Rasi (Multi Select)"
                 selectedValues={values.partnerRasiMulti || []}
                 onValuesChange={(val) => setFieldValue("partnerRasiMulti", val)}
-                options={starOptions}
+                options={rasiOptions} // Using rasiOptions (same as starOptions)
                 error={errors.partnerRasiMulti as string[] | undefined}
                 touched={!!touched.partnerRasiMulti}
               />
 
-              {/* Fill Test Data */}
+              {/* Fill Test Data Button */}
               <TouchableOpacity
                 style={styles.fillButton}
                 onPress={() => {
-                  setFieldValue("partnerName", "John Doe");
                   setFieldValue("partnerAgeFrom", "25");
                   setFieldValue("partnerAgeTo", "30");
                   setFieldValue("partnerMaritalStatus", "single");
-                  setFieldValue("partnerHometown", "madurai");
-                  setFieldValue("partnerJobTown", ["chennai"]);
+                  // Use a value that exists in hometownOptions
+                  setFieldValue("partnerHometown", "Madurai");
+                  // Use values that exist in hometownOptions
+                  setFieldValue("partnerJobTown", ["Chennai", "Bengaluru"]);
                   setFieldValue("partnerReligion", "hindu");
-                  setFieldValue("partnerSubcaste", "iyer");
-                  setFieldValue("partnerEducation", "bachelors");
-                  setFieldValue("partnerJob", "engineer");
+                  // Use a value that exists in subcasteOptions
+                  setFieldValue("partnerSubcaste", "Nadar"); 
+                  // Use a value that exists in educationOptions
+                  setFieldValue("partnerEducation", "BTech"); 
+                  // Use a value that exists in jobOptions
+                  setFieldValue("partnerJob", "Software Engineer"); 
                   setFieldValue("partnerSalary", "50000");
-                  setFieldValue("partnerHometownMulti", ["madurai"]);
+                  // Use values that exist in hometownOptions
+                  setFieldValue("partnerHometownMulti", ["Madurai", "Chennai"]);
                   setFieldValue("partnerChevai", "no");
                   setFieldValue("partnerPhysicalChallenge", "no");
                   setFieldValue("partnerHouseType", "apartment");
                   setFieldValue("partnerGold", "50");
                   setFieldValue("partnerSkinColor", "fair");
-                  setFieldValue("partnerStarMulti", ["ashwini"]);
-                  setFieldValue("partnerRasiMulti", ["ashwini"]);
+                  // Use values that exist in starOptions
+                  setFieldValue("partnerStarMulti", ["Ashwini", "Bharani"]);
+                  // Use values that exist in starOptions/rasiOptions
+                  setFieldValue("partnerRasiMulti", ["Ashwini", "Bharani"]); 
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "600", textAlign: "center" }}>
@@ -495,7 +654,7 @@ export default function PartnerPreferenceForm() {
                 onPress={() => handleSubmit()}
                 disabled={!isValid || !dirty}
               >
-                <Text style={styles.buttonText}>Save</Text>
+                <Text style={styles.buttonText}>Save Preferences</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -506,6 +665,11 @@ export default function PartnerPreferenceForm() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   button: {
     backgroundColor: "#007bff",
     paddingVertical: 14,
