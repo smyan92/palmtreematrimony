@@ -22,9 +22,9 @@ const initialValues = {
   partnerAgeFrom: "",
   partnerAgeTo: "",
   partnerMaritalStatus: "",
+  partnerReligion: "",
   partnerHometown: "",
   partnerJobTown: [] as string[],
-  partnerReligion: "",
   partnerSubcaste: "",
   partnerEducation: "",
   partnerJob: "",
@@ -52,9 +52,9 @@ const validationSchema = Yup.object({
     .positive("Age must be positive")
     .min(Yup.ref("partnerAgeFrom"), "Age To must be greater than Age From"),
   partnerMaritalStatus: Yup.string().required("Select marital status"),
+  partnerReligion: Yup.string().required("Select religion"),
   partnerHometown: Yup.string().required("Select hometown"),
   partnerJobTown: Yup.array().min(1, "Select at least 1 job town"),
-  partnerReligion: Yup.string().required("Select religion"),
   partnerSubcaste: Yup.string().required("Select subcaste"),
   partnerEducation: Yup.string().required("Select education"),
   partnerJob: Yup.string().required("Select job"),
@@ -83,6 +83,7 @@ const religionOptions = [
   { label: "Hindu", value: "hindu" },
   { label: "Christian", value: "christian" },
 ];
+
 
 const subcasteOptions = [
   // Hindu Nadar Subcastes
@@ -270,13 +271,15 @@ const skinColorOptions = [
 // Rasi options are usually the same as Star options in this context
 const rasiOptions = starOptions;
 
+
+
 export default function PartnerPreferenceForm() {
   const [loading, setLoading] = useState(true);
   const [initialData, setInitialData] = useState<partnertDetails>(initialValues);
 
-  /**
-   * Fetches the user's existing partner preferences from the API.
-   */
+  useEffect(() => {
+    fetchPartnerPreferences();
+  }, []);
   const fetchPartnerPreferences = async () => {
     setLoading(true);
     try {
@@ -308,8 +311,9 @@ export default function PartnerPreferenceForm() {
       }
       
       const data = await res.json();
-      const preferences = data.partnerPreferences || {}; // Assume the preferences are in a key called partnerPreferences
-      
+      const preferences = data.partnerPreferenceDetails || {}; // Assume the preferences are in a key called partnerPreferences
+    
+     
       // FIX: Map the fetched data to the initialValues structure,
       // ensuring arrays are not null/undefined and using empty strings as fallbacks
       setInitialData({
@@ -343,9 +347,7 @@ export default function PartnerPreferenceForm() {
     }
   };
 
-  useEffect(() => {
-    fetchPartnerPreferences();
-  }, []);
+
 
   /**
    * Submits the form data to update partner preferences.
