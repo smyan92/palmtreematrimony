@@ -136,10 +136,17 @@
       "partnerReligion": "Hindu",
       "partnerEducation": "Graduate"
     },
-    "photos": {
-      "profilePhotoUrls": ["https://example.com/photos/murugan1.jpg"],
-      "photoPrivacy": "Public"
-    },
+
+
+"userPhotos": {
+    "profilePhotoUrls": ["https://example.com/photos/murugan1.jpg"],
+    "allPhotosUrls": [
+      "https://example.com/photos/murugan_a.jpg",
+      "https://example.com/photos/murugan_b.jpg"
+    ],
+    "photoPrivacy": "Public"
+  },
+    
     "status": { "isProfileCompleted": true, "isVerified": true },
     "createdAt": "2025-10-08T10:00:00Z",
     "updatedAt": "2025-10-08T10:00:00Z"

@@ -2,11 +2,14 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const User = require("../models/User");
+const MAX_PROFILE_PHOTOS = 3;
 
-const updatePhotos = async (req, res) => {
+
+
+const updateProfilePhotos = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { photoPrivacy } = req.body;
+    const { photoPrivacy } = req.body; // Privacy setting might apply to profile photos
 
     // Check for file upload failure
     if (!req.files || req.files.length === 0) {
@@ -15,117 +18,250 @@ const updatePhotos = async (req, res) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
+        // Update privacy and save
         user.photos.photoPrivacy = photoPrivacy;
         await user.save();
         return res.status(200).json({
-          message:
-            "Photo privacy updated successfully (no new photo uploaded).",
+          message: "Photo privacy updated successfully (no new profile photos uploaded).",
           photos: user.photos,
         });
       }
-      return res.status(400).json({ message: "No photos uploaded" });
+      return res.status(400).json({ message: "No profile photos uploaded" });
+    }
+
+    // Enforce MAX_PROFILE_PHOTOS limit
+    if (req.files.length > MAX_PROFILE_PHOTOS) {
+        // This check should ideally be in the router (Multer), but serves as a backup.
+        return res.status(400).json({ message: `You can only upload up to ${MAX_PROFILE_PHOTOS} profile photos at a time.` });
     }
 
     // 1. Get relative paths for the new files
     const newFileUrls = req.files.map(
       (file) => `/uploads/users/${userId}/${file.filename}`
     );
-    // NOTE: I've added '/users/${userId}/' to the path based on typical user-specific uploads.
-    // Adjust '/uploads/...' path based on your Multer configuration.
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    // NOTE: For a PUT route, we typically REPLACE the old photos.
+    // If you need to keep the old ones and APPEND, use the logic from 'addGalleryPhotos'.
+    
+    // OPTIONAL: Delete the old physical profile photo files if they are being replaced.
+    // (Skipped for simplicity, but recommended for cleanup)
+
+    // 2. REPLACE the profilePhotoUrls array
+    user.photos.profilePhotoUrls = newFileUrls; 
+    
+    // 3. Save privacy status
+    user.photos.photoPrivacy = photoPrivacy || user.photos.photoPrivacy || "Public";
+
+    await user.save();
+
+    // 4. Send back the newly updated photo data
+    res.status(200).json({
+      message: "Profile photos replaced successfully",
+      photos: user.photos,
+    });
+  } catch (error) {
+    console.error("Profile photo update error:", error);
+    res.status(500).json({ message: "Server error while updating profile photos" });
+  }
+};
+
+/**
+ * Controller for GET /:id/profilePhotoUrls
+ */
+const getProfilePhotos = async (req, res) => {
+  try {
+    const userId = req.params.id;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2. CONCATENATE the new URLs with the existing ones
-    let updatedUrls = [
-      ...(user.photos.profilePhotoUrls || []), // Use existing photos
-      ...newFileUrls, // Add the new photos
-    ];
-
-    // 3. Optional: Enforce MAX_PHOTOS limit (e.g., if MAX_PHOTOS is 3)
-    // If you need to enforce a limit, this logic should be applied:
-    // const MAX_PHOTOS = 3;
-    // if (updatedUrls.length > MAX_PHOTOS) {
-    //    // Implement logic: either slice, or reject the upload earlier with a 400 error
-    //    // For simplicity, we'll keep the full array unless you implement a check
-    // }
-
-    // 4. Save the updated list and privacy status
-    user.photos.profilePhotoUrls = updatedUrls;
-    user.photos.photoPrivacy =
-      photoPrivacy || user.photos.photoPrivacy || "Public";
-
-    await user.save();
-
-    // 5. Send back the newly updated photo data
+    // Only return the profilePhotoUrls and the privacy setting (optional)
     res.status(200).json({
-      message: "New photos added successfully",
-      newPhotoUrl: newFileUrls[0], // Return the first URL for easy client state update (if only one was uploaded)
-      photos: user.photos,
+      profilePhotoUrls: user.photos.profilePhotoUrls || [],
+      photoPrivacy: user.photos.photoPrivacy || "Public",
     });
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ message: "Server error while uploading photos" });
+    console.error("Get profile photos error:", error);
+    res.status(500).json({ message: "Server error while fetching profile photos" });
   }
 };
 
-const deletePhoto = async (req, res) => {
+/**
+ * Controller for DELETE /:id/profilePhotoUrls
+ * Requires photoUrl in req.body to identify the photo to delete.
+ */
+const deleteProfilePhoto = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { photoUrl } = req.body; // e.g. "/uploads/users/xyz/filename.jpg"
+    const { photoUrl } = req.body; 
 
-    // --- Authentication/Authorization Check (Implicitly done by token middleware before this) ---
+    if (!photoUrl) return res.status(400).json({ message: "Photo URL is required" });
 
-    const user = await User.findById(userId); // Use your actual Mongoose model
+    const user = await User.findById(userId); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // 1️⃣ Remove from DB
+    const initialLength = user.photos.profilePhotoUrls.length;
     user.photos.profilePhotoUrls = user.photos.profilePhotoUrls.filter(
       (url) => url !== photoUrl
     );
-    await user.save();
 
-    // 2️⃣ Remove from folder (FIXED PATH LOGIC)
-
-    // Use path.resolve or path.join with process.cwd() for a more robust path.
-    // Assuming your 'uploads' directory is at the project root, this is the safest way.
-
-    // This resolves the full absolute path, starting from the current working directory,
-    // and appending the relative photoUrl received from the client.
-    const filePath = path.join(process.cwd(), photoUrl);
-
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      // console.log(`Successfully deleted file: ${filePath}`); // Optional logging
-    } else {
-      // It's good practice to log if the file is missing, but continue since the DB is clean
-      console.warn(`File not found on disk, but removed from DB: ${filePath}`);
+    if (user.photos.profilePhotoUrls.length === initialLength) {
+        return res.status(404).json({ message: "Profile photo not found in user's list." });
     }
 
-    res.status(200).json({ message: "Photo deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting photo:", err);
-    res.status(500).json({ message: "Error deleting photo" });
-  }
-};
+    await user.save();
 
-const getUserPhotos = async (req, res) => {
-  try {
-    const userId = req.params.id;
+    // 2️⃣ Remove from folder
+    const filePath = path.join(process.cwd(), photoUrl);
+    
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    } else {
+      console.warn(`Profile file not found on disk, but removed from DB: ${filePath}`);
+    }
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.status(200).json({
-      photos: user.photos,
+    res.status(200).json({ 
+        message: "Profile photo deleted successfully",
+        profilePhotoUrls: user.photos.profilePhotoUrls
     });
-  } catch (error) {
-    console.error("Get photos error:", error);
-    res.status(500).json({ message: "Server error while fetching photos" });
+  } catch (err) {
+    console.error("Error deleting profile photo:", err);
+    res.status(500).json({ message: "Error deleting profile photo" });
   }
 };
+
+// ======================================================================
+// 2. ALL PHOTOS / GALLERY CONTROLLERS (Uses a separate 'allPhotosUrls' array)
+// ======================================================================
+
+/**
+ * Controller for POST /:id/allPhotos
+ * Adds new photos to the user's gallery ('allPhotosUrls').
+ */
+const addGalleryPhotos = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Check for file upload failure
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "No gallery photos uploaded" });
+        }
+
+        // 1. Get relative paths for the new files
+        const newFileUrls = req.files.map(
+            (file) => `/uploads/users/${userId}/${file.filename}`
+        );
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // 🚨 FIX 1: Ensure user.photos object exists 
+        user.photos = user.photos || {}; 
+        
+        // 🚨 FIX 2: Ensure user.photos.allPhotosUrls array exists
+        user.photos.allPhotosUrls = user.photos.allPhotosUrls || [];
+
+        // 2. CONCATENATE/APPEND the new URLs with the existing ones
+        let updatedUrls = [
+            ...user.photos.allPhotosUrls, // Use existing photos
+            ...newFileUrls, // Add the new photos
+        ];
+
+        // 3. Save the updated list
+        user.photos.allPhotosUrls = updatedUrls;
+        await user.save();
+
+        // 4. Send back the newly updated photo data
+        res.status(200).json({
+            message: `${newFileUrls.length} new photos added to gallery successfully`,
+            newPhotoUrls: newFileUrls,
+            allPhotosUrls: user.photos.allPhotosUrls,
+        });
+    } catch (error) {
+        console.error("Gallery photo upload error:", error);
+        res.status(500).json({ message: "Server error while adding gallery photos" });
+    }
+};
+
+
+/**
+ * Controller for GET /:id/allPhotos
+ * Gets the user's main gallery photos.
+ */
+const getAllPhotos = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Return the gallery photos list and the overall privacy setting
+        res.status(200).json({
+            allPhotosUrls: user.photos.allPhotosUrls || [],
+            photoPrivacy: user.photos.photoPrivacy || "Public",
+        });
+    } catch (error) {
+        console.error("Get all photos error:", error);
+        res.status(500).json({ message: "Server error while fetching all photos" });
+    }
+};
+
+/**
+ * Controller for DELETE /:id/allPhotos
+ * Deletes a specific photo from the gallery ('allPhotosUrls').
+ */
+const deleteGalleryPhoto = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { photoUrl } = req.body; 
+
+        if (!photoUrl) return res.status(400).json({ message: "Photo URL is required" });
+
+        const user = await User.findById(userId); 
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Ensure the array exists
+        user.photos.allPhotosUrls = user.photos.allPhotosUrls || [];
+
+        // 1️⃣ Remove from DB
+        const initialLength = user.photos.allPhotosUrls.length;
+        user.photos.allPhotosUrls = user.photos.allPhotosUrls.filter(
+            (url) => url !== photoUrl
+        );
+        
+        if (user.photos.allPhotosUrls.length === initialLength) {
+             return res.status(404).json({ message: "Gallery photo not found in user's list." });
+        }
+
+        await user.save();
+
+        // 2️⃣ Remove from folder
+        const filePath = path.join(process.cwd(), photoUrl);
+        
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        } else {
+            console.warn(`Gallery file not found on disk, but removed from DB: ${filePath}`);
+        }
+
+        res.status(200).json({ 
+            message: "Gallery photo deleted successfully",
+            allPhotosUrls: user.photos.allPhotosUrls
+        });
+    } catch (err) {
+        console.error("Error deleting gallery photo:", err);
+        res.status(500).json({ message: "Error deleting gallery photo" });
+    }
+};
+
 
 // ==================== Get User Profile ====================
 const getUserProfile = async (req, res) => {
@@ -456,7 +592,17 @@ const getPartnerPreferences = async (req, res) => {
 };
 
 module.exports = {
-  updatePhotos,
+ 
+
+
+updateProfilePhotos,
+  getProfilePhotos,
+  deleteProfilePhoto,
+  addGalleryPhotos,
+  getAllPhotos,
+  deleteGalleryPhoto,
+
+
   getUserProfile,
  
   updateBasicDetails,
@@ -474,6 +620,4 @@ module.exports = {
   updatePartnerPreferences,
   getPartnerPreferences,
 
-  getUserPhotos,
-  deletePhoto,
 };

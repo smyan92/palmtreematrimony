@@ -24,21 +24,32 @@ router.put('/:id/partnerPreferences', authMiddleware, verifyOwnership, userContr
 router.get('/:id/partnerPreferences', authMiddleware, verifyOwnership, userController.getPartnerPreferences);
 
 
-// Upload photos (max 3)
-router.put(
-  "/:id/photos",
-  authMiddleware,
-  verifyOwnership,
-  upload.array("photos", 3),
-  userController.updatePhotos
+
+// userRoutes.js
+// Ensure this line is exactly correct, including 'POST'
+router.post(
+  "/:id/allPhotos",
+  authMiddleware,      // ⚠️ Check this middleware is running and calling next()
+  verifyOwnership,     // ⚠️ Check this middleware is running and calling next()
+  // Ensure 'upload' is imported and 'galleryPhotos' is the field name
+  upload.array("galleryPhotos", 3), 
+  userController.addGalleryPhotos
 );
 
-// ✅ New routes
+// Get ALL Photos (Gallery Photos)
+router.get(
+  "/:id/allPhotos",
+  authMiddleware,
+  verifyOwnership,
+  userController.getAllPhotos
+);
 
-// Get all photos of a user
-router.get("/:id/photos", authMiddleware, verifyOwnership, userController.getUserPhotos);
-
-// Delete a specific photo
-router.delete("/:id/photos", authMiddleware, verifyOwnership, userController.deletePhoto);
+// Delete a specific photo from the ALL PHOTOS/Gallery collection
+router.delete(
+  "/:id/allPhotos",
+  authMiddleware,
+  verifyOwnership,
+  userController.deleteGalleryPhoto
+);
 
 module.exports = router;

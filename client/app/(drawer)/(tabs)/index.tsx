@@ -27,7 +27,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Satheesh Kumar" avatarUri={avatarUri} />
+      <CustomHeader />
       <ScrollView style={styles.scrollViewContent}>
         <View style={styles.findProfileContainer}>
           <FindProfile />

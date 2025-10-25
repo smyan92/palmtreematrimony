@@ -54,7 +54,6 @@ exports.register = async (req, res) => {
 };
 
 
-// ==================== LOGIN ====================
 exports.login = async (req, res) => {
   const { mobileNo, password } = req.body;
 
@@ -71,6 +70,8 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    const primaryProfilePhoto = user.photos?.allPhotosUrls?.[0] || null;
+
     res.json({
       token,
       user: {
@@ -79,6 +80,7 @@ exports.login = async (req, res) => {
         fullName: user.login.fullName,
         userType: user.userType,
         planType: user.planType,
+        profilePhotoUrl: primaryProfilePhoto,
       },
     });
   } catch (err) {
