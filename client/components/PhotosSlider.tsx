@@ -11,7 +11,7 @@ import {
     StatusBar,
     Platform,
     Alert,
-    ActivityIndicator, 
+    ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 🎯 BASE URL: Replace with your actual server IP/domain
-const API_BASE_URL = "http://192.168.43.38:5000"; 
+const API_BASE_URL = "http://192.168.43.38:5000";
 
 const { width, height } = Dimensions.get("window");
 const CARD_WIDTH = 150;
@@ -57,270 +57,264 @@ const PhotoUploader: React.FC<Props> = ({
 
     // Helper function to extract relative path (e.g., /uploads/users/id/file.jpg) from the full URI
     const getRelativePhotoUrl = (fullUri: string): string => {
-        const baseUrlRegex = new RegExp(`^${API_BASE_URL}`); 
+        const baseUrlRegex = new RegExp(`^${API_BASE_URL}`);
         return fullUri.replace(baseUrlRegex, "");
     };
 
-    // === Data Fetching (Runs on Mount) ===
+    // === API Calls: Upload, Fetch, and Delete ===
 
-const fetchPhotos = async () => {
-    setIsLoading(true);
-    try {
+    /**
+     * Deletes a photo from the server and local state.
+     * @param index The index of the photo in the current photos array.
+     * @param skipConfirm If true, skips the confirmation dialog (used for replacement).
+     */
+    const removePhoto = async (index: number, skipConfirm = false) => {
+        const photoToDelete = photos[index];
+        const photoUrl = getRelativePhotoUrl(photoToDelete); // e.g. "/uploads/users/..."
+
         const token = (await AsyncStorage.getItem("token")) || "";
         const userString = await AsyncStorage.getItem("user");
         const user = userString ? JSON.parse(userString) : null;
 
         if (!user || !user.id) {
-            setIsLoading(false);
+            Alert.alert("Error", "User not logged in or ID not found for deletion.");
             return;
         }
         const userId = user.id;
 
-        const response = await fetch(`${API_BASE_URL}/user/${userId}/allPhotos`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            const relativePaths = data.allPhotosUrls;
-            const privacy = data.photoPrivacy;
-            Alert.alert("Relative Paths Fetched:", JSON.stringify(relativePaths));
-
-            if (Array.isArray(relativePaths)) {
-                
-                const fullUris = relativePaths.map((path: string) => {
-                    let correctedPath = path;
-
-                    // FIX: Standardize old paths (e.g., "/uploads/filename.jpg") 
-                    // to the new secure format ("/uploads/users/id/filename.jpg")
-                    if (path.startsWith('/uploads/') && !path.includes(`/users/${userId}/`)) {
-                        
-                        // 🚨 FIX APPLIED HERE: Get filename by removing just '/uploads/'
-                        const filenameSegment = path.substring('/uploads/'.length);
-                        correctedPath = `/uploads/users/${userId}/${filenameSegment}`;
-                        Alert.alert("Corrected Path:", correctedPath); // Debug alert
+        const performDeletion = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/user/${userId}/allPhotos`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ photoUrl }),
                     }
+                );
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update local state by removing the photo at the index
+                    const updated = photos.filter((_, i) => i !== index);
+                    setPhotos(updated);
+                    onChange?.(updated);
                     
-                    // Return the full URI using the corrected path
-                    return `${API_BASE_URL}${correctedPath}`; 
-                });
-
-                setPhotos(fullUris);
-                onChange?.(fullUris);
-                setPhotoPrivacy(privacy || initialPrivacy);
-
-            } else {
-                // 🚨 FIX APPLIED HERE: Correct error message
-                console.error("Fetch photos failed: 'allPhotosUrls' field missing or invalid.", data);
-                Alert.alert("Error", "Server returned invalid photo list structure (missing allPhotosUrls).");
+                    if (!skipConfirm) { 
+                        Alert.alert("🗑️ Success", "Photo deleted successfully!");
+                    }
+                } else {
+                    console.error("Deletion failed data:", data);
+                    Alert.alert("Error", data.message || "Photo deletion failed on server.");
+                }
+            } catch (error) {
+                console.error("Deletion error:", error);
+                Alert.alert("Error", "An unexpected error occurred during photo deletion.");
+            } finally {
+                setIsLoading(false);
             }
+        };
+
+
+        if (skipConfirm) {
+            // If skipping confirmation (as part of replace), execute immediately
+            await performDeletion();
         } else {
-            console.error("Fetch photos failed:", data.message || "Unknown server error", data);
-            Alert.alert("Error", data.message || "Failed to fetch photos.");
+            // Show confirmation for direct user deletion
+            Alert.alert(
+                "Confirm Deletion",
+                "Are you sure you want to delete this photo?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Delete", style: "destructive", onPress: performDeletion },
+                ]
+            );
         }
-
-    } catch (error) {
-        console.error("Error fetching photos:", error);
-        Alert.alert("Network Error", "Could not connect to the server.");
-    } finally {
-        setIsLoading(false);
-    }
-};
-
-    useEffect(() => {
-        fetchPhotos();
-    }, []);
-
-    // === API Calls: Upload and Delete ===
+    };
 
     /**
-     * Handles the actual API upload of a single photo file.
+     * Upload a single photo (new or replacement)
      */
-/**
- * Upload a single photo (new or replacement)
- */
+    const uploadPhoto = async (
+        imageUri: string,
+        filename: string = "GalleryPhoto"
+    ) => {
+        try {
+            setIsLoading(true);
 
+            const token = (await AsyncStorage.getItem("token")) || "";
+            const userString = await AsyncStorage.getItem("user");
+            const user = userString ? JSON.parse(userString) : null;
 
-const uploadPhoto = async (
-  imageUri: string,
-  filename: string = "GalleryPhoto"
-) => {
-  try {
-    setIsLoading(true);
+            if (!user || !user.id) {
+                Alert.alert("Error", "User not logged in");
+                setIsLoading(false);
+                return;
+            }
 
-    const token = (await AsyncStorage.getItem("token")) || "";
-    const userString = await AsyncStorage.getItem("user");
-    const user = userString ? JSON.parse(userString) : null;
+            const userId = user.id;
 
-    if (!user || !user.id) {
-      Alert.alert("Error", "User not logged in");
-      setIsLoading(false);
-      return;
-    }
+            const formData = new FormData();
+            
+            // Use the correct Multer field name for the gallery
+            formData.append("galleryPhotos", {
+                uri: imageUri,
+                name: filename,
+                type: "image/jpeg",
+            } as any);
 
-    const userId = user.id;
+            // Endpoint and Method (POST) are correct for adding to gallery
+            const response = await fetch(`${API_BASE_URL}/user/${userId}/allPhotos`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
 
-    const formData = new FormData();
-    
-    // ❌ REMOVED: Privacy is handled by a separate API
-    // ❌ REMOVED: formData.append("photoPrivacy", privacyStatus);
+            const data = await response.json();
 
-    // 🚨 FIXED 1: Use the correct Multer field name for the gallery
-    formData.append("galleryPhotos", {
-      uri: imageUri,
-      name: filename,
-      type: "image/jpeg",
-    } as any);
+            if (response.ok) {
+                // Expect the correct response key from the backend controller
+                const relativePaths = data.allPhotosUrls;
 
-    // Endpoint and Method (POST) are correct for adding to gallery
-    const response = await fetch(`${API_BASE_URL}/user/${userId}/allPhotos`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+                if (Array.isArray(relativePaths)) {
+                    const fullUris = relativePaths.map((path: string) => `${API_BASE_URL}${path}`);
+                    
+                    // ✅ FIX: Update the state with the full array received from the server
+                    setPhotos(fullUris); 
+                    onChange?.(fullUris);
+                    
+                    Alert.alert("✅ Success", `${filename} uploaded successfully!`);
+                } else {
+                    Alert.alert("Error", "Invalid server response: Missing 'allPhotosUrls'.");
+                }
+            } else {
+                console.error("Upload failed:", data);
+                Alert.alert("Upload Error", data.message || "Could not upload photo");
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            Alert.alert("Network Error", "Failed to upload photo");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const data = await response.json();
-
-    if (response.ok) {
-      // 🚨 FIXED 2: Expect the correct response key from the backend controller
-      const relativePaths = data.allPhotosUrls;
-
-      if (Array.isArray(relativePaths)) {
-        const fullUris = relativePaths.map((path: string) => `${API_BASE_URL}${path}`);
-        
-        // This should update your dedicated gallery photo state (not 'setPhotos' if that's for profile)
-        // setGalleryPhotos(fullUris); 
-        
-        // We remove profile-photo-specific state updates:
-        // ❌ REMOVED: setPhotoPrivacy(data.photos?.photoPrivacy || privacyStatus);
-
-        Alert.alert("✅ Success", `${filename} uploaded successfully!`);
-      } else {
-        Alert.alert("Error", "Invalid server response: Missing 'allPhotosUrls'.");
-      }
-    } else {
-      console.error("Upload failed:", data);
-      Alert.alert("Upload Error", data.message || "Could not upload photo");
-    }
-  } catch (error) {
-    console.error("Upload error:", error);
-    Alert.alert("Network Error", "Failed to upload photo");
-  } finally {
-    setIsLoading(false);
-  }
-};
 
     /**
      * Opens the image picker and triggers the upload.
      * @param indexToReplace The index of the photo being replaced, or undefined if adding a new one.
      */
-const pickImage = async (indexToReplace?: number) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
-    });
+    const pickImage = async (indexToReplace?: number) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+        // ❌ Change this line back to the deprecated name:
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ FIX
+        quality: 0.7,
+    });
 
-    if (!result.canceled && result.assets.length > 0) {
-        const imageAsset = result.assets[0];
-        const newUri = imageAsset.uri;
-        
-        // Extract the filename 
-        const filename = newUri.split("/").pop() || "Photo"; 
-        
-        // 🚨 ADDED ALERT: Display the extracted filename for debugging
-        Alert.alert("Filename Check", filename);
+        if (!result.canceled && result.assets.length > 0) {
+            const imageAsset = result.assets[0];
+            const newUri = imageAsset.uri;
+            
+            // Extract the filename 
+            const filename = newUri.split("/").pop() || "Photo"; 
+            
+            Alert.alert("Filename Check", filename);
 
-        // 🚨 FIXED: Pass the extracted 'filename' variable instead of the invalid 'photoPrivacy'
-        await uploadPhoto(newUri, filename); 
-    }
-};
+            // 🟢 NEW LOGIC: Handle replacement (Delete old + Add new)
+            if (indexToReplace !== undefined) {
+                // 1. Delete the old photo silently
+                await removePhoto(indexToReplace, true); 
+                
+                // 2. Upload the new photo (it will be appended)
+                await uploadPhoto(newUri, filename);
+            } else {
+                // Add new photo
+                await uploadPhoto(newUri, filename); 
+            }
+        }
+    };
 
-    /**
-     * Deletes a photo from the server and local state.
-     */
-const removePhoto = async (index: number) => {
-    const photoToDelete = photos[index];
-    const photoUrl = getRelativePhotoUrl(photoToDelete); // e.g. "/uploads/users/..."
 
-    // Start fetching user/token data
-    const token = (await AsyncStorage.getItem("token")) || "";
-    const userString = await AsyncStorage.getItem("user");
-    const user = userString ? JSON.parse(userString) : null;
+    // === Data Fetching (Runs on Mount) ===
+    const fetchPhotos = async () => {
+        setIsLoading(true);
+        try {
+            const token = (await AsyncStorage.getItem("token")) || "";
+            const userString = await AsyncStorage.getItem("user");
+            const user = userString ? JSON.parse(userString) : null;
 
-    if (!user || !user.id) {
-        Alert.alert("Error", "User not logged in or ID not found for deletion.");
-        return;
-    }
-    const userId = user.id;
+            if (!user || !user.id) {
+                setIsLoading(false);
+                return;
+            }
+            const userId = user.id;
 
-    Alert.alert(
-        "Confirm Deletion",
-        "Are you sure you want to delete this photo?",
-        [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: async () => {
-                    // Assuming setIsLoading(true) is called here, as previously fixed
-                    // setIsLoading(true); 
-                    try {
-                        const response = await fetch(
-                            // 🚨 FIX APPLIED: Changed endpoint from /photos to /allPhotos 
-                            // to correctly target the gallery deletion API.
-                            `${API_BASE_URL}/user/${userId}/allPhotos`,
-                            {
-                                method: "DELETE",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    Authorization: `Bearer ${token}`,
-                                },
-                                // photoUrl is the relative path expected by the backend controller
-                                body: JSON.stringify({ photoUrl }),
-                            }
-                        );
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            // Update local state by removing the photo at the index
-                            const updated = photos.filter((_, i) => i !== index);
-                            // NOTE: The backend response should ideally return the updated array,
-                            // but filtering the local state is faster for a simple deletion.
-                            setPhotos(updated);
-                            onChange?.(updated);
-                            Alert.alert("🗑️ Success", "Photo deleted successfully!");
-                        } else {
-                            console.error("Deletion failed data:", data);
-                            Alert.alert(
-                                "Error",
-                                data.message || "Photo deletion failed on server."
-                            );
-                        }
-                    } catch (error) {
-                        console.error("Deletion error:", error);
-                        Alert.alert(
-                            "Error",
-                            "An unexpected error occurred during photo deletion."
-                        );
-                    } finally {
-                        // Assuming setIsLoading(false) is called here, as previously fixed
-                        // setIsLoading(false);
-                    }
+            const response = await fetch(`${API_BASE_URL}/user/${userId}/allPhotos`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
                 },
-            },
-        ]
-    );
-};
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const relativePaths = data.allPhotosUrls;
+                const privacy = data.photoPrivacy;
+                // Alert.alert("Relative Paths Fetched:", JSON.stringify(relativePaths));
+
+                if (Array.isArray(relativePaths)) {
+                    
+                    const fullUris = relativePaths.map((path: string) => {
+                        let correctedPath = path;
+
+                        // FIX: Standardize old paths (if necessary)
+                        if (path.startsWith('/uploads/') && !path.includes(`/users/${userId}/`)) {
+                            const filenameSegment = path.substring('/uploads/'.length);
+                            correctedPath = `/uploads/users/${userId}/${filenameSegment}`;
+                            // Alert.alert("Corrected Path:", correctedPath); // Debug alert
+                        }
+                        
+                        // Return the full URI using the corrected path
+                        return `${API_BASE_URL}${correctedPath}`; 
+                    });
+
+                    setPhotos(fullUris);
+                    onChange?.(fullUris);
+                    // Ensure privacy is a valid type before setting
+                    setPhotoPrivacy(privacy === 'Public' || privacy === 'Private' ? privacy : initialPrivacy);
+
+                } else {
+                    console.error("Fetch photos failed: 'allPhotosUrls' field missing or invalid.", data);
+                    Alert.alert("Error", "Server returned invalid photo list structure (missing allPhotosUrls).");
+                }
+            } else {
+                console.error("Fetch photos failed:", data.message || "Unknown server error", data);
+                Alert.alert("Error", data.message || "Failed to fetch photos.");
+            }
+
+        } catch (error) {
+            console.error("Error fetching photos:", error);
+            Alert.alert("Network Error", "Could not connect to the server.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPhotos();
+    }, []);
 
     // === UI Logic (Scroll/Modal) ===
     
+    // ... (handleScroll, handlePreviewScroll, openPreview, useEffect for modal scroll remain unchanged) ...
     const handleScroll = (event: any) => {
         const index = Math.round(
             event.nativeEvent.contentOffset.x / (CARD_WIDTH + 20)

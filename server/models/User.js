@@ -3,30 +3,22 @@ const mongoose = require("mongoose");
 // ===================================
 // 1. Define the Nested Schema FIRST
 // ===================================
-const userPhotosSchema = new mongoose.Schema({ // 👈 Fixed: Using mongoose.Schema
-    // Holds 1 to 3 URLs for the main profile display.
+const userPhotosSchema = new mongoose.Schema({
     profilePhotoUrls: {
         type: [String],
-        // Default ensures a placeholder image is always present for new users.
-        default: [] 
+        default: [], // 👈 Best Practice: default ஆக காலியான அரே
     },
     
-    // Holds the collection of all other user photos (the gallery).
     allPhotosUrls: {
         type: [String],
-        // Defaults to an empty array, ready for new uploads.
-        default: [] 
+        default: [], // 👈 Best Practice: default ஆக காலியான அரே
     },
     
-    // Controls the visibility of all photos.
     photoPrivacy: {
         type: String,
-        // Restricted to only Public or Private visibility options.
-        enum: ['Public', 'Private'], 
-        default: 'Public' 
+        default: 'public', // 👈 Best Practice: default ஆக String மதிப்பு
     }
 }, { _id: false });
-
 
 // ===================================
 // 2. Define the Main Schema
@@ -36,6 +28,15 @@ const userSchema = new mongoose.Schema(
         // ======================================================
         // 🔹 LOGIN DETAILS
         // ======================================================
+    
+    palmtreeId: {
+        type: String,
+        required: false, // கட்டாயமில்லை, ஏனெனில் பதிவு செய்யும் போதுதான் இது உருவாக்கப்படுகிறது
+        unique: true,   // ஒவ்வொரு ஐடியும் தனித்துவமானது என்பதை உறுதி செய்ய
+        sparse: true    // இந்த ஃபீல்ட் இல்லாத டாக்குமெண்ட்களை அனுமதிக்கிறது
+    },
+    
+    
         login: {
             mobileNo: { type: String, required: true, unique: true },
             fullName: { type: String, required: true },
@@ -66,20 +67,20 @@ const userSchema = new mongoose.Schema(
         // ======================================================
         // 🔹 USER TYPE & PLAN
         // ======================================================
-        userType: {
-            type: String,
-            enum: ["admin", "user"],
-            default: "user",
-        },
-        planType: {
-            type: String,
-            enum: ["premium", "normal"],
-            default: "normal",
-        },
-        planDetails: {
-            expiryDate: { type: Date },
-            features: [{ type: String }],
-        },
+        // userType: {
+        //     type: String,
+        //     enum: ["admin", "user"],
+        //     default: "user",
+        // },
+        // planType: {
+        //     type: String,
+        //     enum: ["premium", "normal"],
+        //     default: "normal",
+        // },
+        // planDetails: {
+        //     expiryDate: { type: Date },
+        //     features: [{ type: String }],
+        // },
 
         // ======================================================
         // 🔹 EDUCATION & PROFESSIONAL DETAILS
@@ -96,8 +97,8 @@ const userSchema = new mongoose.Schema(
         // ======================================================
         family: {
             homeType: { type: String },
-            hasLoan: { type: Boolean, default: false },
-            hasCar: { type: Boolean, default: false },
+            hasLoan: { type: Boolean },
+            hasCar: { type: Boolean },
             propertyDetails: { type: String },
             drinkingHabit: { type: String },
 
@@ -114,44 +115,63 @@ const userSchema = new mongoose.Schema(
         // ======================================================
         // 🔹 PARTNER PREFERENCES
         // ======================================================
-        partnerPreferences: {
-            partnerAgeFrom: { type: Number },
-            partnerAgeTo: { type: Number },
-            partnerMaritalStatus: { type: String, trim: true },
-            partnerHometown: { type: String, trim: true },
-            partnerJobTown: { type: [String], default: [] },
-            partnerReligion: { type: String, trim: true },
-            partnerSubcaste: { type: String, trim: true },
-            partnerEducation: { type: String, trim: true },
-            partnerJob: { type: String, trim: true },
-            partnerSalary: { type: String, trim: true },
-            partnerHometownMulti: { type: [String], default: [] },
-            partnerChevai: { type: String, trim: true },
-            partnerPhysicalChallenge: { type: String, trim: true },
-            partnerHouseType: { type: String },
-            partnerGold: { type: String, trim: true },
-            partnerSkinColor: { type: String, trim: true },
-            partnerStarMulti: { type: [String], default: [] },
-            partnerRasiMulti: { type: [String], default: [] },
-        },
+    // ======================================================
+// 🔹 PARTNER PREFERENCES (திருத்தப்பட்ட பிரிவு)
+// ======================================================
+partnerPreferences: {
+    partnerAgeFrom: { type: Number },
+    partnerAgeTo: { type: Number },
+    partnerMaritalStatus: { type: String},
+    partnerHometown: { type: String},
+    
+    // 👇 இந்த Multi ஃபீல்டுகள் அனைத்தையும் [String] என மாற்றவும்
+    partnerJobTown: { type: [String], default: undefined,
+    required: false}, 
+    
+    partnerReligion: { type: String, trim: true },
+    partnerSubcaste: { type: String, trim: true },
+    partnerEducation: { type: String, trim: true },
+    partnerJob: { type: String, trim: true },
+    partnerSalary: { type: String, trim: true },
+    
+    // 👇 இந்த ஃபீல்டையும் [String] என மாற்றவும்
+    partnerHometownMulti: { type: [String], default: undefined,
+    required: false}, 
+    
+    partnerChevai: { type: String, trim: true },
+    partnerPhysicalChallenge: { type: String, trim: true },
+    partnerHouseType: { type: String },
+    partnerGold: { type: String, trim: true },
+    partnerSkinColor: { type: String},
+    
+    // 👇 ராசி (Rasi) மற்றும் நட்சத்திரம் (Star) ஆகிய இரண்டையும் [String] என மாற்றவும்
+    partnerStarMulti: { type: [String], default: undefined,
+    required: false}, 
+    partnerRasiMulti: { type: [String], default: undefined,
+    required: false}, // 👈 இந்தப் ஃபீல்டுதான் பிழையைத் தந்தது
+},
 
 
         // ======================================================
         // 🔹 PHOTOS
         // ======================================================
         // This is now correctly referencing the defined schema
-        photos: {
-            type: userPhotosSchema, 
-            default: {} 
-        },
+   // models/User.js - Main Schema-வில் உள்ள photos பகுதி
 
+photos: {
+    type: userPhotosSchema, 
+    // 👇 இதுதான் முக்கிய மாற்றம். default: () => ({}) பதிலாக இதை அமைக்கவும்.
+    // நீங்கள் photos விவரங்களை வழங்கவில்லை என்றால், Mongoose அதை முழுவதுமாகத் தவிர்த்துவிடும்.
+    default: undefined,
+    required: false
+},
         
         // ======================================================
         // 🔹 STATUS FLAGS
         // ======================================================
         status: {
-            isProfileCompleted: { type: Boolean, default: false },
-            isVerified: { type: Boolean, default: false },
+            isProfileCompleted: { type: Boolean},
+            isVerified: { type: Boolean},
         },
     },
     { timestamps: true }

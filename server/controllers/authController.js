@@ -7,7 +7,7 @@ exports.register = async (req, res) => {
   try {
     const { mobileNo, fullName, password } = req.body;
 
-    // Basic validation
+    // 1. Basic validation
     if (!mobileNo || !fullName || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -15,36 +15,57 @@ exports.register = async (req, res) => {
     const trimmedMobile = mobileNo.trim();
     const trimmedName = fullName.trim();
 
-    // Check if user already exists
+    // 2. Check if user already exists
     const existingUser = await User.findOne({ "login.mobileNo": trimmedMobile });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
+    // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
-    const user = await User.create({
-      login: {
+    // 4. Create new user (palmtreeId is initially missing/default)
+  // திருத்தப்பட்ட User.create பகுதி
+
+let user = await User.create({
+    login: {
         mobileNo: trimmedMobile,
         fullName: trimmedName,
         password: hashedPassword,
-      },
-      // userType and planType will use schema defaults
-      // Optional: initialize other nested objects if needed
-      // photos: { profilePhotoUrls: [] }, // empty array by default
-      // status: { isProfileCompleted: false, isVerified: false },
-    });
+    },
+  
+});
+    // ----------------------------------------------------------------
+    // 5. Custom ID உருவாக்குதல் மற்றும் சேமித்தல் (ADDING THE LOGIC HERE)
+    // ----------------------------------------------------------------
+    
+    // a) MongoDB ID-யை ஸ்ட்ரிங்காக மாற்றுதல்
+    const mongoIdString = user._id.toString(); 
 
+    // b) கடைசி 6 இலக்கங்களைப் பெறுதல்
+    const uniqueNumber = mongoIdString.slice(-6); 
+
+    // c) Custom ID-யை உருவாக்குதல் (PT00 + unique number)
+    const customUserId = "PT00" + uniqueNumber; // Example: PT00660554
+
+    // d) டேட்டாபேஸில் Custom ID-யைப் புதுப்பித்தல்
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: { palmtreeId: customUserId } },
+      { new: true } // புதுப்பிக்கப்பட்ட ஆவணத்தை திரும்பப் பெற
+    );
+    
+    // ----------------------------------------------------------------
+
+    // 6. Success Response
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: user._id.toString(),
-        mobileNo: user.login.mobileNo,
-        fullName: user.login.fullName,
-        userType: user.userType,
-        planType: user.planType,
+        id: updatedUser.palmtreeId, // Custom ID-யை இங்கே அனுப்புதல்
+        mobileNo: updatedUser.login.mobileNo,
+        fullName: updatedUser.login.fullName,
+        userType: updatedUser.userType,
+        planType: updatedUser.planType,
       },
     });
   } catch (err) {
@@ -52,7 +73,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
 
 exports.login = async (req, res) => {
   const { mobileNo, password } = req.body;

@@ -144,50 +144,46 @@ const deleteProfilePhoto = async (req, res) => {
  * Controller for POST /:id/allPhotos
  * Adds new photos to the user's gallery ('allPhotosUrls').
  */
+
+
 const addGalleryPhotos = async (req, res) => {
     try {
         const userId = req.params.id;
 
-        // Check for file upload failure
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "No gallery photos uploaded" });
-        }
-
-        // 1. Get relative paths for the new files
+        // ... (File check and URL mapping remains the same) ...
         const newFileUrls = req.files.map(
             (file) => `/uploads/users/${userId}/${file.filename}`
         );
 
-        const user = await User.findById(userId);
+        // 1. Use findByIdAndUpdate with $push to append new URLs
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                // $push is used with $each to add multiple items to the array efficiently.
+                $push: { 'photos.allPhotosUrls': { $each: newFileUrls } }
+            },
+            { 
+                new: true, // Return the updated document
+                runValidators: true,
+                upsert: true // Ensures the document is created if it doesn't exist (though not needed here)
+            } 
+        );
+
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        // 🚨 FIX 1: Ensure user.photos object exists 
-        user.photos = user.photos || {}; 
-        
-        // 🚨 FIX 2: Ensure user.photos.allPhotosUrls array exists
-        user.photos.allPhotosUrls = user.photos.allPhotosUrls || [];
-
-        // 2. CONCATENATE/APPEND the new URLs with the existing ones
-        let updatedUrls = [
-            ...user.photos.allPhotosUrls, // Use existing photos
-            ...newFileUrls, // Add the new photos
-        ];
-
-        // 3. Save the updated list
-        user.photos.allPhotosUrls = updatedUrls;
-        await user.save();
-
-        // 4. Send back the newly updated photo data
+        // 2. Send back the updated data from the response object
         res.status(200).json({
             message: `${newFileUrls.length} new photos added to gallery successfully`,
             newPhotoUrls: newFileUrls,
-            allPhotosUrls: user.photos.allPhotosUrls,
+            allPhotosUrls: user.photos.allPhotosUrls, // Get the final array from the updated document
         });
-    } catch (error) {
+
+    }  catch (error) {
         console.error("Gallery photo upload error:", error);
         res.status(500).json({ message: "Server error while adding gallery photos" });
     }
 };
+
 
 
 /**
